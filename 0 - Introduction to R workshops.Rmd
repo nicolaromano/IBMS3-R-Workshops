@@ -1,0 +1,36 @@
+---
+title: "Introduction to workshops"
+author:
+ - Nicola Romanò
+ - nicola.romano@ed.ac.uk
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+***
+\pagenumbering{gobble}
+
+# Introduction to workshops
+
+IBMS3 will contain a series of eight self-guided R workshops that will run throughuout the year. 
+
+The idea of a self-guided workshop is that you will be given a document to follow at your own pace during the session. Some parts of this guide you should have no issue in following, as they will just introduce you on how to perform some task in R. Other parts, however, will require you to solve problems or learn how to use a certain command all by yourself. Yes, sometimes we will not tell you how to do things... but I am sure you do like a good challenge! Workshops content will follow from what has been covered more in theory during lectures, so please refer to your lecture slides and notes to get a refresher of the theory behind what you are doing. It is extremely important not to make these workshops an exercise in _copy and pasting_ of code, but rather an opportunity to learn and understand how to analyse data using R.
+
+Please note that although a demonstrator will be in the room to help with general issues, it could be the case that they are not an expert on the topic, and they may not have all of the answers to your questions, so you will have to use your knowledge (and the R manual!) to get around any issue! You can work by yourselves, or in groups, as you prefer. Although workshops last for only three hours, please **don't rush**! This is not a race to see who finishes first, but rather an opportunity to practice aspects that may have not been explained in depth during lectures and to apply what you have learned in practice. If you don't finish, don't worry, you can continue at your own pace at any time. 
+
+Finally, remember that the code that you will be given should be used as a guide; try to experiment and change things, and see what happens! If you are unsure how to use a certain command, or what a certain parameter means remember that you can just type in the R console:
+
+```{r eval=FALSE}
+help(command)
+```
+
+or simply
+
+```{r eval=FALSE}
+?command
+```
+
+to see the R help for that specific command.
