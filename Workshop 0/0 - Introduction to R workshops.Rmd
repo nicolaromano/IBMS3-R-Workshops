@@ -1,0 +1,54 @@
+---
+title: "Introduction to workshops"
+author:
+ - Nicola Romanò
+ - nicola.romano@ed.ac.uk
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+***
+\pagenumbering{arabic}
+
+# Introduction to workshops
+
+IBMS3 will contain a series of eight self-guided R workshops that will run throughuout the year. 
+
+The idea of a self-guided workshop is that you will be given a document to follow at your own pace. 
+
+Some parts of this guide you should have no issue in following, as they will just introduce you on how to perform some task in R. Other parts, however, will require you to solve problems or learn how to use a certain command all by yourself. Yes, sometimes we will not tell you how to do things... but I am sure you do like a good challenge! 
+
+Workshops content will follow from what has been covered more in theory during lectures, so please refer to your lecture slides and notes to get a refresher of the theory behind what you are doing. It is extremely important not to make these workshops an exercise in _copy and pasting_ of code, but rather an opportunity to learn and understand how to analyse data using R.
+
+Please, note that although we have allocated Friday mornings to work on these workshops this activity **will not be in a class and there will not be a member of staff** with you. You can decide to work alone or in groups, it's entirely up to you!
+
+# Why self-guided workshops?
+
+This may seem an odd choice. Surely it's better to have a member of staff telling you what to do! Well... yes and no. Yes, it is easier when someone tells you what to do step by step, but this is unlikely to happen in 'real life'. 
+
+These workshops will teach you how to work with R but will also (hopefully) let you become more _independent learners_. 
+Moreover, we know that different students have different learning styles. From my experience in doing similar activities in the past, it is seldom the case that everyone in the class proceeds at the same speed. Some people will solve one exercise very quickly but then will be stuck on a different one. Having the possibility of pacing yourself will remove the pressure of having to rush because the others have already finished and will allow you to explore things more in detail. Also, if you want to try and do something in a different way you can take your time and do that.
+
+\newpage
+
+# What if something doesn't work/I don't understand something/I am not sure whether I have done things correctly?
+
+Probably all of those situations will apply at some point... and we have different solutions for them.
+
+1. Try to use your the R manual to get around any issue! 
+If you are unsure how to use a certain command, or what a certain parameter means remember that you can just type in the R console:
+
+```{r eval=FALSE}
+help(command)
+```
+
+\hspace{2em} to see the R help for that specific command.
+
+2. We have setup an online discussion forum on Blackboard Learn where you can discuss the workshops, solutions to exercise and so on. We will try to answer your questions on the forum as much as possible, but we would really love to see you using it as a tool to discuss solutions between yourselves and learn from each other.
+
+3. You can always contact me via email or stop me on campus when I am there... but I would rather see you using the forum as your question may also help other students.
+
+Finally, remember that the code that you will be given should be used as a guide; try to experiment and change things, and see what happens! 
