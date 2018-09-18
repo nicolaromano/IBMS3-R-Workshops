@@ -7,6 +7,7 @@ output:
   tufte::tufte_html: default
 ---
 
+
 ```{r setup, include=FALSE}
 library(tufte)
 library(xtable)
@@ -22,7 +23,6 @@ knitr::knit_hooks$set(chunk = function(x, options)
   })
 ```
 
-
 ***
 # Introduction
 
@@ -34,15 +34,16 @@ Data quality is of course very important. Remember the phrase "garbage in, garba
 # Learning objectives
 After completing this workshop you will be able to:
 
-* Reading and explore the main features of a dataset
-* Identify suspicious data points / outliers
+* Read and explore the main features of a dataset
+* Identify suspicious data points / outliers and deal with them
+* Deal with missing data points
 * Plot the data and visually identify relationships between variables
 * Convert wide dataset into long datasets
 
-# Basic data handling & plotting using R
+# Section 1 - Basic data handling & plotting using R
 This first section will be a refresher on how to read, explore and plot data in R. You should be fairly familiar with these commands, but a refresher always helps!
 
-For this first part we are going to use the file called _metab-workshop1.csv_.
+For this first section we are going to use the file called _metab-workshop1.csv_.
 
 Let's start by loading the dataset using^[You will have to change the path to where you put the file, e.g. _read.csv("C:/Workshop1/metab-workshop1.csv")_. Alternatively you can tell R to look for files in that directory using the _setwd_ command. This second approach is very useful if you are reading/writing multiple files in the same script.]
 
@@ -116,7 +117,7 @@ For example
 median(metab$Age)
 ```
 
-# Basic plotting
+# Section 2 - Basic plotting
 
 We now want to start plotting the values we read.
 ```{r echo = FALSE}
@@ -138,7 +139,7 @@ plot(metab$Concentration,
 We have added several parameters: 
 
 - _pch_ changes the *p*lotting *ch*aracter^[There are many different plotting characters, try different numbers for _pch_ and see what happens. You can even use a character of your choice, e.g. _pch='x'_.]
-- _cex_ changes the size of the plotting points. Values less then 1 make them smaller, values bigger than 1 make them bigger. Depending on the configuration of your computer, different values may give prettier results.
+- _cex_ changes the size of the plotting points. The smaller the value, the smaller the point size, the default value is 1. Depending on the configuration of your computer, different values may give prettier results.
 - _cex.axis_ changes the size of the axes labels (both x and y).
 - _ylab_ sets the label for the y axis^[Try changing the label of the x axis].
 - Try changing the _las_ parameter and see what it does.
@@ -160,6 +161,15 @@ plot(metab$Concentration, col = pointcolor, bty = "n",
 legend("topright", legend = c("Men", "Women"), fill = c("darkgreen", "purple"), cex = 0.7)
 ```
 
+There are also other ways to generate the color for the points. One is to use the `ifelse` function.
+We could write:
+
+```{r eval = FALSE}
+pointcolor <- ifelse(metab$Sex == "F", "purple", "darkgreen")
+```
+
+This is equivalent to the first two lines of the code above. It essentially reads "For each element of `metab$Sex`, if it equals F then set `pointcolor` to _purple_, otherwise set it to _darkgreen_". This works because we only have two options, more complex situations with many colors may require a bit more work!
+\newpage
 By this time, you should have seen that there is a negative value of concentration! Since this is clearly an error^[Why is this?], we can safely remove it.
 
 ```{r}
@@ -170,11 +180,37 @@ wrong.val <- which(metab$Concentration < 0)
 metab <- metab[-wrong.val,]
 ```
 
-# Grouping data
+Finally, we can replot the data, and this time we will also add to horizontal lines corresponding to the mean of the values for men and women. To draw a straight line on an existing plot you can use the `abline` command.
+For example, these two commands will draw a red line parallel to the x axis at $y = 5$ and a green line parallel to the y axis at $x = 10$
+
+```{r eval = FALSE}
+abline(h = 5, col = "red")
+abline(v = 10, col = "green")
+```
+
+Now try to generate the following plot using the commands you have learned so far.^[Post your solution in the forum!]
+
+```{r fig.height=3, echo = F}
+pointch <- ifelse(metab$Sex == "F", 20, 21)
+pointcol <- ifelse(metab$Sex == "F", "orange", "blue")
+
+plot(metab$Concentration, col = pointcol, bty = "n",
+     pch = pointch, cex = 0.7, cex.axis = 0.8, las = 1, 
+     ylab = "Concentration")
+legend("topright", legend = c("Men", "Women"), 
+       col = c("blue", "orange"), 
+       pch = c(21, 20), cex = 0.7)
+mean.M <- mean(metab$Concentration[metab$Sex == "M"])
+mean.F <- mean(metab$Concentration[metab$Sex == "F"])
+abline(h = mean.M, col = "blue", lwd = 2)
+abline(h = mean.F, col = "orange", lwd = 2)
+```
+
+\newpage
+# Section 3 - Grouping data
 
 Plotting single data points is useful, but most often we want to group the plot by some meaningful factor. Boxplots (a.k.a. box-and-whisker plots) are very good for this.
 
-\newpage
 ```{r echo = FALSE}
 par(cex.axis = 0.8)
 ```
@@ -185,15 +221,15 @@ boxplot(Concentration ~ Treatment, metab, las = 1,
         ylab = "Concentration")
 ```
 
-The _boxplot_ function allows us to plot a value against one or more factor^[Why is there a point on top of the boxplot for group A? Try and find out, we can discuss this in the forum!]. As we noted above, R orders factors alphabetically, therefore groups appear in the _odd_ order A, B, and Control. Should we want to change the order we could do:
+The _boxplot_ function allows us to plot a value against one or more factor^[Why is there a point on top of the boxplot for group A? We can discuss this in the forum!]. As we noted above, R orders factors alphabetically, therefore groups appear in the _odd_ order A, B, and Control. Should we want to change the order we could do:
 
 ```{r}
-levels(metab$Treatment) <- c("CTRL", "A", "B")
+metab$Treatment <- factor(metab$Treatment, levels = c("CTRL", "A", "B")) 
 ```
 
-After doing this, the boxplot will be correctly ordered (try it!).
+After doing this, the boxplot will be correctly ordered ^[Another point for discussion: what does the line above exactly do?].
 
-We can also combine more than one factor in the boxplot, using + (e.g. Concentration ~ Treatment + Sex)
+We can also combine more than one factor in the boxplot, using + (e.g. `Concentration ~ Treatment + Sex`)
 
 Try plotting concentration against treatment, separately for men and women. 
 
@@ -210,7 +246,7 @@ stripchart(Concentration ~ Treatment, metab, add = TRUE, vert = TRUE,
 
 We need to pass two important parameters to _stripchart_: _add_ tells R to plot over the existing graph, rather than producing a new one. _vert_ specifies to plot the stripchart vertically and not horizontally ^[The _jitter_ parameter moves points around and is very handy when you have a lot of overlapping points. It only works when specifying _method="jitter"_. Try changing the _jitter_ value and see what happens!].
 
-# Histograms and density plots
+# Section 4 - Histograms
 Histograms are a great way to summarise data. Let's generate an histogram of the concentration in our dataset.
 
 ```{r}
@@ -233,7 +269,7 @@ hist(metab$Concentration, col = "black", las = 1, br = seq(0, 1000, 50),
 
 Which is the best? Let's discuss this in the forum!
 
-# Other plots
+# Section 5 - Other plots
 
 There are many other plots that R is able to produce, including some very complex ones. Some plots require extra packages (such as _ggplot2_) to be installed. We will not cover those here, but there are many online resources that you can use to learn about them should you want to.
 
@@ -253,17 +289,71 @@ arrows(bp, c(mean.M - sd.M, mean.F - sd.F), bp, c(mean.M + sd.M, mean.F + sd.F),
        angle = 90, code = 3)  
 ```
 
-# Converting between wide and long data
+# Section 6 - Dealing with missing data
+
+We have talked about missing data in lecture 1.3 and we have seen that the `complete.cases` function can be very useful when dealing with it. Let's practice using it a little bit!
+
+Read and explore the dataset 'neurons-workshop1.csv'. This contains the number of neurons showing expression of a certain protein in  5 different brain regions. During processing some of the brain sections were lost, before counting could be done.^[What type of missing data is this?]
+
+Start by reading it and exploring it. How many missing values are there? ^[Hint: look at `summary`! Alternatively `which(is.na(neurons$counts))` will tell you which observations (=rows) are NA.]
+
+```{r echo = FALSE}
+neurons <- read.csv("neurons-workshop1.csv")
+```
+
+Now start exploring the dataset; plot the various variables, see if you can spot any trend or relation.
+
+Now, let's try to calculate the mean count per region. You should have all the tools you need to do it by yourself! ^[One R function that will make that very easy to do is `aggregate`. See if you can figure out how, and post it in the forum!]
+\newpage
+Your calculations should result in:
+
+| Region | Counts |
+|--------|--------|
+| A      | 47.8   |
+| B      | NA     |
+| C      | 9.4    |
+| D      | 26.9   |
+| E      | NA     |
+
+Groups B and E have missing data, hence `mean` gives `NA` as a result.
+
+As seen in the lecture, we can use `complete.cases` to remove those data points thus allowing the correct calculations to occur^[What are we doing when using `complete.cases`?].
+
+Is there a correlation between neuron count and age of the animal? Use the function `cor` as seen in class to calculate it. Try to compare the result of correlation with pairwise omission and with list omission. How does the result change? Why? 
+
+```{r}
+neurons2 <- neurons[complete.cases(neurons),]
+nrow(neurons)
+mean(neurons$counts)
+nrow(neurons2)
+mean(neurons2$counts)
+```
+
+Note that we can also use `complete.cases` in conjunction with `which` to  know which observations are missing we could also use ^[This works because `complete.cases` returns `TRUE` if the observation is complete, and `FALSE` if there is missing data.]
+
+```{r}
+which(complete.cases(neurons) == FALSE)
+```
+
+This tells us that observation 32 and 45 are missing.
+Indeed we can check that by:
+
+```{r}
+neurons[32,]
+neurons[45,]
+```
+
+# Section 7 - Converting between wide and long data
 The last part of this workshop concerns data formatting. You have learnt about long and wide data formatting during the lectures. Very often you will have to deal with _messy_ data, that is not formatted in a way that is easy to work with (e.g. data may be in wide format). This may be because someone else recorded the data, or because often wide data is easier to look at in software such as Excel.
 Read the file _lizard.csv_. This file contains counts for the number of three different species of lizards found at 5 different locations in a region.
 If we inspect the data we see that it is in a long format.
 
 ```{r}
 lizard <- read.csv("lizard-workshop1.csv")
-print(lizard)
+head(lizard)
 ```
 
-Each row represent a species and each column a location. This is not a helpful format to use in R, as many functions will be very difficult to run. For instance, if we wanted to plot the number of lizard in each species by location we don't have a straightforward way of doing it ^[There are ways of plotting wide data, of course, but for instance functions such as _lm_ want a long data format.]
+Each row represent a species and each column a location. This is not a helpful format to use in R, as many functions will be very difficult to run. For instance, if we wanted to plot the number of lizard in each species by location we don't have a straightforward way of doing it^[There are ways of plotting wide data, of course, but for instance functions such as _lm_ want a long data format.].
 
 Luckily R comes to the rescue! For reshaping data we need to install an extra R package, called _reshape2_ ^[There are also other packages such as _tidyr_ that can perform the same task, feel free to explore those as well if you wish.]. To install the package we can just run:
 
@@ -271,7 +361,7 @@ Luckily R comes to the rescue! For reshaping data we need to install an extra R 
 install.packages("reshape2")
 ```
 
-You need to do this only once, if you already have the package installed the line above is unnecessary. Once the package is installed we need to tell R to use it; we do so by using the _library_ command.
+You need to do this only once, if you already have the package installed the line above is unnecessary. Once the package is installed we need to tell R to use it; we do so by using the _library_ command (this line you will have to call every time).
 
 ```{r}
 library(reshape2)
@@ -285,13 +375,12 @@ lizard.long <- melt(lizard, id.vars = "Lizard", variable.name = "Location", valu
 
 This tells R to use column Lizard as our _ID_, that is the identifier of the subject that is being measured. The _variable.name_ parameters specifies the name of the variable(s)
  that we are changing, in this case the location (this is just the name of the new column in the long dataset). Finally, value.name is the column name for what we are currently measuring.
- 
+
 Let's see what we got!
 
 ```{r}
 head(lizard.long)
 ```
-\newpage
 We can now easily do:
 
 ```{r}
@@ -301,7 +390,6 @@ boxplot(Counts ~ Lizard, lizard.long, las=2, ylab = "Number of lizards")
 
 Sometimes conversions from wide to long data are a bit more involved, but _melt_ is a very powerful function and most of the time you will be able to reshape your data.
 
-\newpage
 Now try to open the file _BP-workshop1.csv_. This contains data from an experiment where participants of different sex and age took two different drugs. 
 The data has been anonymised, so that each participant is represented by an ID (2 letters and 3 numbers). Each participant blood pressure was measured before and after taking each of the drugs, and the relative change in blood pressure was calculated. The dataset contains the calculated fold changes for each participants.
 
@@ -312,11 +400,3 @@ The data has been anonymised, so that each participant is represented by an ID (
 - Is the response to the drugs different between men and women? What about between younger and older participants?
 - Plot the response to the two drugs using an histogram, a boxplot, or a barplot. Which representation is more useful? Why?
 - Look at the data for patient PY080. Is there anything striking about this patient? What do you think you should do if you were to continue and analyse these data?
-
-Finally, read the file _dataset3.csv_ and answer these questions:
-
-1. xxx
-2. xxx
-3. xxx
-4. xxx
-5. xxx
