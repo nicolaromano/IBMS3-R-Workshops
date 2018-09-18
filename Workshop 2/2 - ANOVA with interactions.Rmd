@@ -1,0 +1,108 @@
+---
+title: "R workshop #2: multivariate regression analysis and factor interactions"
+author: "Nicola Romanò"
+#date: 05 October 2018
+output: 
+  tufte::tufte_handout: default
+  tufte::tufte_html: default
+---
+
+```{r setup, include=FALSE}
+library(tufte)
+library(xtable)
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(global.par = TRUE)
+
+# See https://stackoverflow.com/questions/25646333/code-chunk-font-size-in-rmarkdown-with-knitr-and-latex
+def.chunk.hook  <- knitr::knit_hooks$get("chunk")
+knitr::knit_hooks$set(chunk = function(x, options) 
+  {
+  x <- def.chunk.hook(x, options)
+  ifelse(options$size != "normalsize", paste0("\\", options$size,"\n\n", x, "\n\n\\normalsize"), x)
+  })
+```
+
+
+***
+# Introduction
+
+Last year we have talked about linear models and their use to perform regression and analysis of variance (ANOVA). We only considered simple situations where we have one independent variable influencing our measured variable (one-way ANOVA) or two factors (two-ways ANOVA) that do not interact with each other. In the lectures we have now talked about interactions and how they change our interpretation of linear models. In this workshop we will have a look at how to deal with interactions in R.
+
+
+# Learning objectives
+After completing this workshop you will be able to:
+
+* Use linear models to perform multiple regression
+* Use linear models to perform Analysis of Variance with multiple factors
+* Correctly interpret the results of your analysis in the presence of interactions 
+
+# Section 1 - A refresher on linear models
+
+We start this workshop with a little refresher of linear models. A linear model is a statistical model that relates the changes in a dependent variable ($Y$) with the changes in one or more independent variables ($X_1, X_2, ..., X_n$).
+
+The general equation for such model is:
+
+$Y = X_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_nX_n + \epsilon$
+
+Where:
+
+- $Y$ is our measured variables
+- $X_1, ..., X_n$ are the factors (or predictors) that influence $Y$
+- $\beta_1, ... \beta_n$ are scaling coefficients that indicate the importance of each predictor.
+- $\epsilon$ is the error, or residual. It represents the effect of all the factors that we did not measure in our experimental setup.
+
+In this simple formula each predictor acts independently from the others. In other words, if we have two predictors, $X_1$ and $X_2$, the effect of $X_1$ on $Y$ will always be the same, independently of the value of $X_2$. As we have seen in the lecture this is not always the case.
+
+#Simple regression
+
+As a first example let's consider the dataset _pressure-workshop2.csv_.
+In this study the effect of a drug on reducing blood pressure has been investigated on 150 patients of different age, weight, and sex.
+
+```{r echo=FALSE, eval=TRUE}
+setwd("~/Teaching/IBMS3/Workshops/Workshop 2/")
+pressure <- read.csv("pressure-workshop2.csv")
+```
+
+Start by familiarising with the data. How many men and women are there? What range of age and weight? Try and plot the various variables against each other and see if any particular patterns emerge. ^[If you do not remember how to do that see Workshop 1.]
+
+
+Let's forget for a moment about the other variables and concentrate on the relation between Weight and response; it looks like the largest effect is seen in heavier patients.
+
+```{r echo = FALSE}
+par(mar = c(5, 4, 1, 2))
+plot(Response ~ Weight, pressure, pch = 20, las = 1, cex = 0.7, bty = "n")
+```
+
+We can use linear regression to test whether such a relation exists.
+Let's state our null hypothesis ____________________________________
+______________________________________________________________
+
+Do you remember how to perform a linear regression in R?
+Try it, if you don't remember see the following page!
+\newpage
+
+```{r}
+model <- lm(Response ~ Weight, pressure)
+```
+
+This generates the model
+
+$Response~=\beta_0+\beta_1*Weight+\epsilon$
+
+What are the assumption of this model? Do you remember how to verify that they are satisfied? ^[Let's discuss this in the forum!]
+
+Let's look at the output of the model^[I would say that the assumptions are generally satisfied, what do you think?], what does it tell you?
+
+```{r}
+summary(model)
+```
+
+From the summary we get:
+
+$\beta_0 = 11.78$ and $\beta_1 = -0.65$
+
+Therefore
+
+$Response~=11.78-0.65*Weight+\epsilon$
+
+Simple regression (i.e. linear regression with a single predictor) is very simple to interpret. For any increase of 1 Kg in weight there is a decrease of 0.65 mmHg in blood pressure.
