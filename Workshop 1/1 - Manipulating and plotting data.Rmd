@@ -399,4 +399,4 @@ The data has been anonymised, so that each participant is represented by an ID (
 - How many participants were over 50 years old? How many of those were women?
 - Is the response to the drugs different between men and women? What about between younger and older participants?
 - Plot the response to the two drugs using an histogram, a boxplot, or a barplot. Which representation is more useful? Why?
-- Look at the data for patient PY080. Is there anything striking about this patient? What do you think you should do if you were to continue and analyse these data?
+- Look at the data for patient OV019. Is there anything striking about this patient? What do you think you should do if you were to continue and analyse these data?
