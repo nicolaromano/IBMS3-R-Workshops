@@ -36,19 +36,20 @@ knitr::knit_hooks$set(width=local({
 ***
 # Introduction
 
-Last year we have talked about linear models and their use to perform regression and analysis of variance (ANOVA). We only considered simple situations where we have one independent variable influencing our measured variable (one-way ANOVA) or two factors (two-ways ANOVA) that do not interact with each other. In the lectures we have now talked about interactions and how they change our interpretation of linear models. In this workshop we will have a look at how to deal with interactions in R.
+Last year we have talked about linear models and their use to perform regression and analysis of variance (ANOVA). We only considered simple situations with one independent variable influencing the output variable (one-way ANOVA) or two factors (two-way ANOVA) that do not interact with each other. In the lectures we have now talked about interactions and how they change our interpretation of linear models. In this workshop we will have a look at how to deal with interactions in R.
 
 
 # Learning objectives
 After completing this workshop you will be able to:
 
-* Use linear models to perform multiple regression
-* Use linear models to perform analysis of variance with multiple factors
+* Use linear models to perform multiple regression and analysis of variance with multiple factors
+* Correctly interpret the output of a linear model
+* Compare two models to choose the one that fits the data better
 * Correctly interpret the results of your analysis in the presence of interactions 
 
 # Section 1 - A refresher on linear models
 
-We start this workshop with a little refresher of linear models. A linear model is a statistical model that relates the changes in a dependent variable ($Y$) with the changes in one or more independent variables ($X_1, X_2, ..., X_n$).
+We start this workshop with a little refresher of linear models. **This also includes some more details about linear models that we only briefly touched upon last year**, so please go through this carefully. A linear model is a statistical model that relates the changes in a dependent variable ($Y$) with the changes in one or more independent variables ($X_1, X_2, ..., X_n$).
 
 The general equation for such model is:
 
@@ -56,12 +57,12 @@ $Y = X_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_nX_n + \epsilon$
 
 Where:
 
-- $Y$ is our measured variables
+- $Y$ is our measured/outcome variables
 - $X_1, ..., X_n$ are the factors (or predictors) that influence $Y$. They are generally the other variables in your dataset, or transformations/combination of them ^[For instance, we may have collected the weight of the subjects in our study, but use log(weight) as a predictor for our model. Or we may have collected two different values and use their ratio as a model parameter]. 
-- $\beta_1, ... \beta_n$ are the regression coefficients, scaling factor that indicate the importance of each predictor and its effect on the outcome variable.
-- $\epsilon$ is the error, or residual. It represents the difference between what is explained by the model prediction, and what we have observed. It includes the effect of all the factors that we did not measure in our experimental setup, as well as measurement errors. We assume that it is normally distributed.
+- $\beta_1, ... \beta_n$ are the regression coefficients, scaling factors for the predictors.
+- $\epsilon$ is the error, or residual. It represents the difference between what is explained by the model prediction, and what we have observed. It includes the effect of all the factors that we did not measure in our experimental setup, as well as measurement errors. We generally assume that it is normally distributed^[Note that although having normally distributed residuals makes things easier... you can still have a good, usable model when residuals are not normally distributed, especially if the sample size is big enough. Mostly, it boils down to critical observation of your data and experience.].
 
-When we use R (or any other software!) to generate the model, what it does is estimating the coefficients $\beta$ in such a way to minimise the error^[In the case of `lm`, this is called a least-square estimation. In statistics books and publications you may see the estimated parameters indicated as $\hat\beta$ (read as ``beta hat''). This is to indicate that this is the result of an estimation, that is an approximation of the true value of $\beta$, which remains unknown].
+When we use R (or any other software!) to generate the model, what it does is estimating the coefficients $\beta$ in such a way to minimise the error^[In the case of `lm`, this is called a least-square estimation. In statistics books and publications you may see the estimated parameters indicated as $\hat\beta$ (read as "beta hat"). This is to indicate that this is the result of an estimation, that is an approximation of the true value of $\beta$ in the population, which remains unknown. We can obtain confidence intervals for these estimates by using `confint(model)`].
 
 In this formula each predictor acts independently from the others. In other words, if we have two predictors, $X_1$ and $X_2$, the effect of $X_1$ on $Y$ will always be the same, independently of the value of $X_2$. As we have seen in the lecture this is not always the case.
 
@@ -75,10 +76,10 @@ setwd("~/Teaching/IBMS3/Workshops/Workshop 2/")
 pressure <- read.csv("pressure-workshop2.csv")
 ```
 
-Start by familiarising with the data. How many men and women are there? What range of age and weight? Try and plot the various variables against each other and see if any particular patterns emerge ^[If you do not remember how to do that, see Workshop 1.].
+Start by familiarising with the data. How many men and women are there? What range of age and weight? Plot the various variables against each other and see if any particular patterns emerge ^[If you do not remember how to do that, see Workshop 1.].
 
 
-Let's forget for a moment about the other variables and concentrate on the relation between Weight and response; it looks like the largest effect is seen in heavier patients.
+Let's forget for a moment about the other variables and concentrate on the relation between Weight and Response; it looks like the largest effect is seen in heavier patients.
 
 ```{r echo = FALSE, fig.height=3.5}
 par(mar = c(5, 4, 1, 2))
@@ -125,7 +126,7 @@ $\hat\beta_0 = 11.78$ and $\hat\beta_1 = -0.65$
 
 Therefore
 
-$Response~=11.78-0.65*Weight+\epsilon$
+$\text{Response}~=11.78-0.65*\text{Weight}+\epsilon$
 
 \vspace{1em}
 
@@ -140,7 +141,7 @@ So, what are these other factors?
 
 ## Multiple regression
 
-Our dataset contains two other descriptors: Age and Sex. It is very biologically plausible that these would affect blood pressure, so we should add them to our model^[Note that, although for the sake of simplicity we are adding these descriptors one at a time, in practice we would start from a complete model, including all of the descriptors!]. To keep things simple, we will start with Age, and consider gender later.
+Our dataset contains two other descriptors: Age and Sex. It is very biologically plausible that these would affect blood pressure, so we should add them to our model^[Note that, although for the sake of simplicity we are adding these descriptors one at a time, in practice we would probably start from a complete model, including all of the descriptors that we measured. That is why we measured, isn't it?]. To keep things simple, we will start with Age, and consider gender later.
 
 It is useful, at this point, to also plot the change in blood pressure against age.
 
@@ -174,11 +175,14 @@ Since the diagnostic plots look good (equal variance throughout and normally dis
 summary(model.2)
 ```
 
-You can interpret the result of this model just like you did for the previous one. It tells us that there is a statistically significant effect of weight ($p<2*10^{-16}$) and of age ($p<2*10^{-16}$) on the response to the drug ($F_{2, 147} = 558.6$ ^[Note that the F statistic reported by `summary` refers to the whole model. If you wanted to know the F statistic for specific components of the model you could run `anova(model.2`, which would give you F and DF for the various descriptors of your model.)])
+You can interpret the result of this model just like you did for the previous one. It tells us that there is a statistically significant effect of weight ($p<2*10^{-16}$) and of age ($p<2*10^{-16}$) on the response to the drug ($F_{2, 147} = 558.6$ ^[Note that the F statistic reported by `summary` refers to the whole model. If you wanted to know the F statistic for specific components of the model you could run `anova(model.2)`, which would give you F and DF for the various descriptors of your model.)])
 Note that now the model explains 88% of the variability!
 
+##Qualitative predictors and dummy variables
+
 Let's now consider gender and add it to our model. Plot the data, do you think gender affects the response to the drug?
-We now are dealing with a discrete qualitative variable, with two levels, F and M. All that we said so far still applies, and `lm` is able to deal with this type of variables with no issue. However, the way we deal with these type of variables is slightly different.
+
+In this case, we are dealing with a discrete qualitative variable, with two levels, F and M. All that we said so far still applies, and `lm` is able to deal with this type of variables with no issue. However, the way we deal with these type of variables is slightly different.
 
 ```{r}
 model.3 <- lm(Response ~ Weight + Age + Sex, data = pressure)
@@ -186,6 +190,133 @@ model.3 <- lm(Response ~ Weight + Age + Sex, data = pressure)
 
 This is modelling the following:
 
-$Response = \beta_0 + \beta_1*Weight + \beta_2*Height$
+$\text{Response} = \beta_0 + \beta_1*\text{Weight} + \beta_2*\text{Height} + \beta_3 * D$
 
-I will leave to you the exercise of checking the assumptions and discussing the output of this third model.
+We introduce a new variable $D$, called a ``dummy variable'', that codes Sex in this way:
+
+\begin{equation}
+\nonumber
+  D=
+  \begin{cases}
+    1, & \text{if Sex}=M \\
+    0, & \text{otherwise}
+  \end{cases}
+\end{equation}
+
+By default R assigns 0 to the first level of the variable (the _reference level_, in this case F), and 1 to the second^[Levels are ordered alphabetically; see Workshop 1 for how to change level ordering.]
+
+Therefore, for observations at the reference level (so from female subjects), the third term $\beta_3*D$ will be 0; for male subjects that will be $\beta_3 * 1 = \beta_3$. Thus, $\beta_3$ represents the **difference between the response of a male and a female**, keeping all of the other factors constant.
+
+Let's have a look at the summary of the model to better clarify this.
+
+\newpage
+
+```{r, width = 60, size="small"}
+summary(model.3)
+```
+
+The output is not much different from what we had before. Does Sex have a statistically significant effect on the response? What percent of variance is explained by this model?^[Note how, although minimally, $R^2$ has increased, since we have added an extra parameter, however $\text{adj.}~R^2$ has decreased!]
+
+Consider the estimates
+
+$\beta_1 = -0.66;~\beta_2 = 0.42;~\beta_3 = 0.41$
+
+These mean that:
+
+- For every increase in 1 kg of weight, the response decreases of 0.66 mmHg (keeping age and sex the same)
+- For every increase in 1 year of age, the response increases of 0.42 mmHg (keeping weight and sex the same)
+- If the patient is male the response increases of 0.41 mmHg
+
+So, what would you predict the response of a 50 year old male weighing 82 kg will be? Write your response on the forum^[Remember to include the intercept as well!].
+
+## Dummy variables for multiple levels
+
+You may have realised at this point, that dummy variables are what R uses to code for groups or other discrete factors when doing an ANOVA! 
+
+In some cases, however, you will have more than two levels; the reasoning is the same, however multiple dummy variables will be used to define the different levels.
+
+For example, suppose you measured the levels of LH in three different species of fish: mackerel, salmon, and trout.
+
+You can code the species variable with two dummy variables (so, number of levels - 1) $D_1$ and $D_2$ such as:
+
+\begin{equation}
+\nonumber
+  D_1=
+  \begin{cases}
+    1, & \text{if Species}=\text{"Salmon"} \\
+    0, & \text{otherwise}
+  \end{cases}
+\end{equation}
+
+\begin{equation}
+\nonumber
+  D_2=
+  \begin{cases}
+    1, & \text{if Species}=\text{"Tuna"} \\
+    0, & \text{otherwise}
+  \end{cases}
+\end{equation}
+
+Therefore:
+
+| Species  | $D_1$ | $D_2$ |
+|----------|-------|-------|
+| Mackerel | 0     | 0     |
+| Salmon   | 1     | 0     |
+| Tuna     | 0     | 1     |
+
+Our model may be something like:
+
+$\text{LH} = \beta_0 + \beta_1*D_1 + \beta_2*D_2 + \epsilon$ 
+
+where $\beta1$ represents the difference between LH levels in salmons and mackerels, and $\beta2$ the difference between LH levels in tuna and mackerel.
+
+#Section 2 - Choosing a model
+
+Going back to our initial example, we have fitted three models:
+
+1. $\text{Response}~=\beta_0+\beta_1*\text{Weight}+\epsilon$
+2. $\text{Response}~=\beta_0+\beta_1*\text{Weight}+\beta_2*\text{Age}+\epsilon$
+3. $\text{Response}~=\beta_0+\beta_1*\text{Weight}+\beta_2*\text{Age}+\beta_3*D_{male}+\epsilon$
+
+We could argue that #2 is better than #1, as it explains a much larger percentage of the variance (88% vs 58%), but what about #3? 
+
+Is it correct to say that since Sex does not have a statistically significant effect on the response, and since the value of adjusted $R^2$ is lower (albeit by a very small amount) we should drop Sex from the model, and only consider Age and Weight as predictors?
+One way of deciding this is to use the `anova` function to compare the two models.
+This tests the null hypothesis that the first model does not fit the data better than the second one. 
+
+\newpage
+
+```{r size = "small", width = 60}
+anova(model, model.2)
+```
+
+As expected, the p-value is very low, indicating that the second model fits the data better than the first one, and should be preferred to it. See also how much the residual sum of squares (RSS) has decreased, indicating that the model is much closer to the real data (hence the residuals (and their squared sum) are smaller).
+
+Conversely 
+
+```{r size = "small", width = 60}
+anova(model.2, model.3)
+```
+The p-value is 0.64, indicating that we should refute the null hypothesis, meaning that our third model (with Age, Weight, and Sex) is not better than the simpler model.
+
+R also provides a convenient function, called `drop1`, that removes one predictor at a time from a larger model. You can see that this confirms what we have seen above.
+
+```{r size = "small", width = 60}
+drop1(model.3, test = "F")
+```
+
+## Exercise
+To consolidate what explained so far, consider the dataset xxx.csv.
+
+**TODO: DATASET TO ANALYSE**
+\newpage
+
+#Section 3 - Interactions between factors
+
+In the lectures you have learnt about interactions amongst factor in multiple regression. We will now see how to analyse interactions in R.
+
+```{r}
+model.4 <- lm(Response ~ Weight * Age, data = pressure)
+summary(model.4)
+```
