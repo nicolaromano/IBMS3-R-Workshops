@@ -306,17 +306,129 @@ R also provides a convenient function, called `drop1`, that removes one predicto
 drop1(model.3, test = "F")
 ```
 
+#Section 3 - Interactions between factors
+
+In the lectures you have learnt about interactions amongst factor in multiple regression. We will now see how to analyse interactions in R.
+
+We will now consider the data in `fox_workshop2.csv`. This dataset^[Data for this example is fictional, but quite loosely based on work by Tannerfeldt and Angerbjörn (Oikos, 1998)] contains the litter size, as a measure of reproductive success, in two different population of Artic foxes, in relations to their age and location, as well as the rodent availability^[Rodents are one source of food for Arctic foxes, but their number is fluctuating year-by-year in many regions] (which has been classified into low, medium, or high).
+
+As usual, we read the data and begin to explore it
+
+```{r size = "small", width = 80}
+foxes <- read.csv("fox-workshop2.csv")
+
+summary(foxes)
+```
+
+You may have noticed that the levels of the RodentAvail factor are in a slightly unusual order^[Alphabetical!]. We can reorder it so Low is used as reference.
+
+```{r}
+foxes$RodentAvail <- factor(foxes$RodentAvail, 
+                            levels = c("Low", "Medium", "High"))
+```
+
+We can then plot some of the relationships between variables^[Can you reproduce these plots?].
+```{r echo = F, fig.width=7, fig.height=2.5}
+oldpar <- par(mfrow = c(1, 3), mar = c(4, 4, 1, 2), 
+              las = 1, bty = "n", cex.lab = 1.3, cex.axis = 1.3)
+plot(LitterSize ~ Age, data = foxes, pch = 20, 
+     ylim = c(0, 20), ylab = "Litter size")
+boxplot(LitterSize ~ RodentAvail, data = foxes, 
+        ylim = c(0, 20), ylab = "Litter Size", 
+        xlab = "Rodent availability", frame = F)
+stripchart(LitterSize ~ RodentAvail, data = foxes,
+           vertical = TRUE, pch = 20, cex = 0.8,
+           add = TRUE, method = "jitter")
+boxplot(LitterSize ~ Location, data = foxes, 
+        ylim = c(0, 20), ylab = "Litter size")
+stripchart(LitterSize ~ Location, data = foxes,
+           vertical = TRUE, pch = 20, cex = 0.8,
+           add = TRUE, method = "jitter")
+par(oldpar)
+```
+
+From a first inspection, it seems that reproductive success is somehow correlated to all of the other variables.
+We can use a linear model to study these relationships^[Litter size is a count, therefore it is bounded to 0; we will learn later in the course that a linear model is not the best way to analyse these type of bounded data, but for the moment we can ignore this problem.].
+
+Just we did before, we can create a model using `lm`:
+
+```{r}
+model <- lm(LitterSize ~ Age + Location + RodentAvail, data = foxes)
+```
+\newpage
+```{r size = 'small', width = 70}
+summary(model)
+```
+
+I will leave the point-by-point interpretation of the model's summary to you^[Look at the intercept, what does a negative value mean there? Do you see any problems with that?]. 
+
+There is an important  question now: is this the best model to describe our data? The adjusted $R^2$ value is 0.64, meaning that the model only explains about 64% of the data's variance. 
+
+Can we improve the model? The answer partly depends on the question we want to address. For example, one interesting question that this model cannot currently answer is "Does rodent availability affect the litter size of both population of foxes in the same way?". This is a more specific and potentially more interesting question to ask, but slightly more complex to answer.
+We can start by going back to our plots. Let's consider this
+
+```{r echo = F}
+par(cex.lab = 0.7, cex.axis = 0.7, las = 1, bty = "n", 
+    mfrow = c(1, 1), mar = c(4, 4, 0, 1))
+```
+```{r fig.height=1.7, fig.align='center', echo = F}
+boxplot(LitterSize ~ RodentAvail * Location, data = foxes, 
+        pch = 20, cex = 0.8, ylab = "Litter size",
+        las = 1, cex.axis = 0.6, xlab = "Rodent availability\nLocation",
+        names = c("Low\nCoastal", "Med\nCoastal", "High\nCoastal",
+                  "Low\nInland", "Med\nInland", "High\nInland"))
+```
+Now, that is interesting! It looks like the two populations are not equal when considering the effect of rodent availability on reproductive success! In other words, there is an interaction between location and rodent availability in deremining litter size. This is not only interesting because it gives us the opportunity to look at how to analyse interactions in R... but also because it brings about other questions such as "why there is this difference?"^[For example, one explanation could be that coastal areas offer larger provisions of birds, that nest on the cliffs on the coast. These birds can be used by foxes as an alternative food source. Therefore foxes living on the coast have on average smaller litters every year, while foxes living inland have large litters in years when there is a lot of food available.].
+
+We can modify our model to take this into account
+
+```{r}
+model.2 <- lm(LitterSize ~ Age + Location + RodentAvail + RodentAvail:Location, data = foxes)
+```
+
+The `RodantAvail:Location` notation is used to indicate the interaction between the two factors. An alternative, and completely equivalent, way of indicating interactions is by using the `*` sign.
+
+```{r}
+model.2 <- lm(LitterSize ~ Age + Location * RodentAvail, data = foxes)
+```
+
+```{r size = "small", width = 85}
+summary(model.2)
+```
+
+This is slightly more complex from what we have seen before, however it can be interpreted in a very similar manner.
+We see that the model now explains 80% of the variability in our data, an improvement compared to the previous model^[You can also compare this model with the previous one using the `anova` function]!
+The model also tells us that there is a significant effect of age on litter size. $\hat\beta_{Age}$ tells us that for each increase of 1 year in age there is an increase in 2.4 in litter size^[We need to be very careful when interpreting these coefficients. The model does not tell us why older animals have bigger litters. It may be directly because of age, or because older animals have previously had litters, and this has an effect on litter size!]. It also tells us that there are significant interactions.
+
+We can visualise these interactions by using an _interaction plot_, such as that provided by the `emmip` function in the package `emmeans`^[If you do not have the package emmeans installed, you can do so using `install.packages("emmeans")`. R also provides another function, called `interaction.plot`, that can produce the same graph)].
+
+```{r}
+par(mar = c(4, 4, 1, 4), cex = 0.5, cex.lab = 1, cex.axis = 1)
+```
+```{r warning=FALSE, message=FALSE}
+library(emmeans) # You need to have emmeans installed for this!
+emmip(model.2, RodentAvail ~ Location)
+emmip(model.2, Location ~ RodentAvail)
+```
+
+These graphs show the _estimated marginal means_, that is the means estimated by our model for each level of the factors we are considering.
+
+Both graphs show the same information; since the lines are not running parallel to each other we can say that there is an interaction between the two factors. Rodent availability is influencing the inland population more than it is the coastal population.
+
+Finally, let's say that we want to know whether there is a statistical differece between the coastal and inland population, at the different level of RodentAvail. We can use the `emmeans` and `pairs` functions to do so. These function can perform pairwise comparison (just like the Tukey test did), also taking into account interactions. Rather than comparing all of the possible levels, We can specify specific differences (or contrasts) that we are interested in; this will avoid, for instance, comparisons such as Inland/High vs Coastal/Low, which do not give us any particular biological information.^[Still, in case we wanted to look at all possible comparisons... we could use `emmeans(model.2, pairwise ~ Location * RodentAvail)`. This will return all possible comparisons, without having to call pairs].
+
+```{r size = "small", width = 80}
+marginals <- emmeans(model.2, ~ Location * RodentAvail)
+pairs(marginals, by = "RodentAvail")
+```
+
+In the calls to pairs we specify that we want to compare Location at different levels of RodentAvail. The output gives us the estimate of the difference (e.g.: for low rodent availability, the coastal foxes have on average 2.6 pups more than inland foxes), and the standard error associated with this estimate^[Remember, these estimates are based on the values of the $\hat\beta$ coefficients calculated for our model, but these are only estimations of the true population parameters]. We also get a p-value for each of the contrasts. Remember, although the p-value tells us that the two conditions are different, it is probably more interesting to look at some measure of effect size (such as the estimate), which tells us about the biological significance of the result. Plot the data, look at the number and think! Would a difference in 0.01 pups/litter with a p-value of 0.00001 be of any biological significance?
+
+Finally, can you compare, for each location, the litter size at different level of rodent availability? 
+
+\newpage
 ## Exercise
 To consolidate what explained so far, consider the dataset xxx.csv.
 
 **TODO: DATASET TO ANALYSE**
 \newpage
-
-#Section 3 - Interactions between factors
-
-In the lectures you have learnt about interactions amongst factor in multiple regression. We will now see how to analyse interactions in R.
-
-```{r}
-model.4 <- lm(Response ~ Weight * Age, data = pressure)
-summary(model.4)
-```
