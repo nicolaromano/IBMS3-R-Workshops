@@ -60,9 +60,9 @@ Where:
 - $Y$ is our measured/outcome variables
 - $X_1, ..., X_n$ are the factors (or predictors) that influence $Y$. They are generally the other variables in your dataset, or transformations/combination of them ^[For instance, we may have collected the weight of the subjects in our study, but use log(weight) as a predictor for our model. Or we may have collected two different values and use their ratio as a model parameter]. 
 - $\beta_1, ... \beta_n$ are the regression coefficients, scaling factors for the predictors.
-- $\epsilon$ is the error, or residual. It represents the difference between what is explained by the model prediction, and what we have observed. It includes the effect of all the factors that we did not measure in our experimental setup, as well as measurement errors. We generally assume that it is normally distributed^[Note that although having normally distributed residuals makes things easier... you can still have a good, usable model when residuals are not normally distributed, especially if the sample size is big enough. Mostly, it boils down to critical observation of your data and experience.].
+- $\epsilon$ is the error, or residual. It represents the difference between what is explained by the model prediction, and what we have observed. It includes the effect of all the factors that we did not measure in our experimental setup, as well as measurement errors. We generally assume that it is normally distributed^[Note that although having normally distributed residuals makes things easier... you can still have a good, usable model when residuals are not normally distributed, especially if deviation from normality are small. Mostly, it boils down to critical observation of your data and experience. Also, talking with a statistician is always a good idea!].
 
-When we use R (or any other software!) to generate the model, what it does is estimating the coefficients $\beta$ in such a way to minimise the error^[In the case of `lm`, this is called a least-square estimation. In statistics books and publications you may see the estimated parameters indicated as $\hat\beta$ (read as "beta hat"). This is to indicate that this is the result of an estimation, that is an approximation of the true value of $\beta$ in the population, which remains unknown. We can obtain confidence intervals for these estimates by using `confint(model)`].
+When we use R (or any other software!) to generate the model, what it does is estimating the coefficients $\beta$ in such a way to minimise the error^[In the case of `lm`, this is called a least-square estimation. In statistics books and publications you may see the estimated parameters indicated as $\hat\beta$ (read as "beta hat"). This is to indicate that this is the result of an estimation, that is an approximation of the true value of $\beta$ for the population, which remains unknown. We can obtain confidence intervals for these estimates by using `confint(model)`].
 
 In this formula each predictor acts independently from the others. In other words, if we have two predictors, $X_1$ and $X_2$, the effect of $X_1$ on $Y$ will always be the same, independently of the value of $X_2$. As we have seen in the lecture this is not always the case.
 
@@ -135,13 +135,13 @@ The effect of weight on the response to the drug is statistically significant ($
 
 \newpage
 
-Another important value is the coefficient of determination ($R^2$, sometimes called deviance). This is a measure of how good the model is, or how much of the variation in the data it explains. $R^2$ is not a great way to compare two different models, since it depends on the number of parameters; that is, if we add an extra descriptor to our model $R^2$ will always increase. For this reason, R reports also an ``adjusted'' version of it.
+Another important value is the coefficient of determination ($R^2$, sometimes called deviance). This is a measure of how good the model is, or how much of the variation in the data it explains. $R^2$ is not a great way to compare two different models, since it depends on the number of parameters; that is, if we add an extra descriptor to our model, $R^2$ will always increase. For this reason, R reports also an ``adjusted'' version of it.
 In this case $adj. R^2=0.5789$; this means that our model describes/explains ~57.9% of the variability in our data, which is OK but not great. It means that there are other factors that we have not considered accounting for >40% of the variability! ^[What do you think is the maximum value of $R^2$? Why?]
 So, what are these other factors?
 
 ## Multiple regression
 
-Our dataset contains two other descriptors: Age and Sex. It is very biologically plausible that these would affect blood pressure, so we should add them to our model^[Note that, although for the sake of simplicity we are adding these descriptors one at a time, in practice we would probably start from a complete model, including all of the descriptors that we measured. That is why we measured, isn't it?]. To keep things simple, we will start with Age, and consider gender later.
+Our dataset contains two other descriptors: Age and Sex. It is very biologically plausible that these would affect blood pressure, so we should add them to our model^[Note that, although for the sake of simplicity we are adding these descriptors one at a time, in practice we would probably start from a complete model, including all of the descriptors that we measured. That is why we measured them, isn't it?]. To keep things simple, we will start with Age, and consider gender later.
 
 It is useful, at this point, to also plot the change in blood pressure against age.
 
@@ -152,7 +152,7 @@ plot(Response ~ Age, pressure, pch = 20, las = 1, cex = 0.7, bty = "n",
      cex.axis = 0.7, cex.lab = 0.75)
 ```
 
-We see a possible in the response to the drug depending on age. Let's incorporate age in our model.
+We see a possible relation in the response to the drug depending on age. Let's incorporate age in our model.
 
 ```{r}
 model.2 <- lm(Response ~ Weight + Age, data = pressure)
@@ -227,7 +227,7 @@ These mean that:
 - For every increase in 1 year of age, the response increases of 0.42 mmHg (keeping weight and sex the same)
 - If the patient is male the response increases of 0.41 mmHg
 
-So, what would you predict the response of a 50 year old male weighing 82 kg will be? Write your response on the forum^[Remember to include the intercept as well!].
+So, what would you predict the response of a 50 year old male weighing 82 kg will be? Write your response on the forum^[Remember to include the intercept in your calculations as well!].
 
 ## Dummy variables for multiple levels
 
@@ -300,7 +300,7 @@ anova(model.2, model.3)
 ```
 The p-value is 0.64, indicating that we should refute the null hypothesis, meaning that our third model (with Age, Weight, and Sex) is not better than the simpler model.
 
-R also provides a convenient function, called `drop1`, that removes one predictor at a time from a larger model. You can see that this confirms what we have seen above.
+R also provides a convenient function, called `drop1`, that removes one predictor at a time from a larger model. You can see that this confirms what we have seen above.^[Please, note that these are only very general guidelines. The choice of what to include in your model is not an easy one and different school of thoughts exist on whether it is better to always have a simpler model or a more complete one and often the answer is not straightforward. **The important thing is that any choice you make is based on a solid motivation.** Don't just stop at the p-value... think of what question you are asking and what your model tells you.]
 
 ```{r size = "small", width = 60}
 drop1(model.3, test = "F")
@@ -310,7 +310,9 @@ drop1(model.3, test = "F")
 
 In the lectures you have learnt about interactions amongst factor in multiple regression. We will now see how to analyse interactions in R.
 
-We will now consider the data in `fox_workshop2.csv`. This dataset^[Data for this example is fictional, but quite loosely based on work by Tannerfeldt and Angerbjörn (Oikos, 1998)] contains the litter size, as a measure of reproductive success, in two different population of Artic foxes, in relations to their age and location, as well as the rodent availability^[Rodents are one source of food for Arctic foxes, but their number is fluctuating year-by-year in many regions] (which has been classified into low, medium, or high).
+We will now consider the data in `fox_workshop2.csv`. This dataset^[Data for this example is fictional, but quite loosely based on work by Tannerfeldt and Angerbjörn (Oikos, 1998)] contains the litter size, as a measure of reproductive success, in two different population of Artic foxes, in relations to their age and location, as well as rodent availability^[Rodents are one source of food for Arctic foxes, but their number is fluctuating year-by-year in many regions] (which has been classified into low, medium, or high).
+
+![Sleepy arctic fox - Eric Kilby - CC BY-SA 2.0](arcticfox.jpg)
 
 As usual, we read the data and begin to explore it
 
@@ -355,7 +357,6 @@ Just we did before, we can create a model using `lm`:
 ```{r}
 model <- lm(LitterSize ~ Age + Location + RodentAvail, data = foxes)
 ```
-\newpage
 ```{r size = 'small', width = 70}
 summary(model)
 ```
@@ -371,14 +372,14 @@ We can start by going back to our plots. Let's consider this
 par(cex.lab = 0.7, cex.axis = 0.7, las = 1, bty = "n", 
     mfrow = c(1, 1), mar = c(4, 4, 0, 1))
 ```
-```{r fig.height=1.7, fig.align='center', echo = F}
+```{r fig.height=2.3, fig.align='center', echo = F}
 boxplot(LitterSize ~ RodentAvail * Location, data = foxes, 
         pch = 20, cex = 0.8, ylab = "Litter size",
         las = 1, cex.axis = 0.6, xlab = "Rodent availability\nLocation",
         names = c("Low\nCoastal", "Med\nCoastal", "High\nCoastal",
                   "Low\nInland", "Med\nInland", "High\nInland"))
 ```
-Now, that is interesting! It looks like the two populations are not equal when considering the effect of rodent availability on reproductive success! In other words, there is an interaction between location and rodent availability in deremining litter size. This is not only interesting because it gives us the opportunity to look at how to analyse interactions in R... but also because it brings about other questions such as "why there is this difference?"^[For example, one explanation could be that coastal areas offer larger provisions of birds, that nest on the cliffs on the coast. These birds can be used by foxes as an alternative food source. Therefore foxes living on the coast have on average smaller litters every year, while foxes living inland have large litters in years when there is a lot of food available.].
+Now, that is interesting! It looks like the two populations are not equal when considering the effect of rodent availability on reproductive success! In other words, there is an interaction between location and rodent availability in deremining litter size. This is not only interesting because it gives us the opportunity to look at how to analyse interactions in R... but also because it brings about other questions such as "why there is this difference?"^[For example, one explanation could be that coastal areas offer larger provisions of birds, that nest on the cliffs on the coast. These birds can be used by foxes as an alternative food source. Therefore foxes living on the coast have on average smaller litters every year, while foxes living inland have large litters in years when there is a lot of food available. Could you design an experiment to test this hypothesis?].
 
 We can modify our model to take this into account
 
@@ -392,6 +393,7 @@ The `RodantAvail:Location` notation is used to indicate the interaction between 
 model.2 <- lm(LitterSize ~ Age + Location * RodentAvail, data = foxes)
 ```
 
+\newpage
 ```{r size = "small", width = 85}
 summary(model.2)
 ```
@@ -415,20 +417,23 @@ These graphs show the _estimated marginal means_, that is the means estimated by
 
 Both graphs show the same information; since the lines are not running parallel to each other we can say that there is an interaction between the two factors. Rodent availability is influencing the inland population more than it is the coastal population.
 
-Finally, let's say that we want to know whether there is a statistical differece between the coastal and inland population, at the different level of RodentAvail. We can use the `emmeans` and `pairs` functions to do so. These function can perform pairwise comparison (just like the Tukey test did), also taking into account interactions. Rather than comparing all of the possible levels, We can specify specific differences (or contrasts) that we are interested in; this will avoid, for instance, comparisons such as Inland/High vs Coastal/Low, which do not give us any particular biological information.^[Still, in case we wanted to look at all possible comparisons... we could use `emmeans(model.2, pairwise ~ Location * RodentAvail)`. This will return all possible comparisons, without having to call pairs].
+And what should we make of the estimates for Location and RodentAvail^[That is $\hat\beta_2 = 2.46$ and $\hat\beta_3=-2.65$]? Because we have a significant interaction, these coefficients become slightly less useful. $\hat\beta_2$ is the mean difference in litter size between foxes living inland and those living on the coast, **independently of rodent availability**^[Can you interpret $\hat\beta_3$? Write your explanation in the forum]. However, since rodent availability affects this difference... we would generally ignore these two coefficient when interpreting our model. More formally, in the presence of interactions, we generally ignore the main effects (so the independent effects of each of the two interacting factors across the whole sample).
+
+Finally, let's say that we want to know whether there is a statistical differece between the coastal and inland population, at the different level of RodentAvail. We can use the `emmeans` and `pairs` functions to do so. These function can perform pairwise comparison (just like the Tukey test did), also taking into account interactions. Rather than comparing all of the possible levels, we can specify specific differences (also called contrasts) that we are interested in; this will avoid, for instance, comparisons such as Inland/High vs Coastal/Low, which do not give us any particular biological information.^[Still, in case we wanted to look at all possible comparisons... we could use `emmeans(model.2, pairwise ~ Location * RodentAvail)`. This will return all possible comparisons, without having to call pairs].
 
 ```{r size = "small", width = 80}
 marginals <- emmeans(model.2, ~ Location * RodentAvail)
 pairs(marginals, by = "RodentAvail")
 ```
 
-In the calls to pairs we specify that we want to compare Location at different levels of RodentAvail. The output gives us the estimate of the difference (e.g.: for low rodent availability, the coastal foxes have on average 2.6 pups more than inland foxes), and the standard error associated with this estimate^[Remember, these estimates are based on the values of the $\hat\beta$ coefficients calculated for our model, but these are only estimations of the true population parameters]. We also get a p-value for each of the contrasts. Remember, although the p-value tells us that the two conditions are different, it is probably more interesting to look at some measure of effect size (such as the estimate), which tells us about the biological significance of the result. Plot the data, look at the number and think! Would a difference in 0.01 pups/litter with a p-value of 0.00001 be of any biological significance?
+In the calls to pairs we specify that we want to compare Location at different levels of RodentAvail. The output gives us the estimate of the difference (e.g.: for low rodent availability, the coastal foxes have on average 2.6 pups more than inland foxes), and the standard error associated with this estimate^[Remember, these estimates are based on the values of the $\hat\beta$ coefficients calculated for our model, but these are only estimations of the true population parameters]. We also get a p-value for each of the contrasts. Remember, although the p-value tells us that the two conditions are different, it is probably more interesting to look at some measure of effect size (such as the estimate), which tells us about the biological significance of the result. Plot the data, look at the number and think! Would a difference in 0.01 pups/litter with a p-value of 0.02 be of any biological significance? Or, would you immediately dismiss a difference in 6 pups/litter because it was associated with a p-value of 0.09^[Think of what that 0.09 means...]?
 
 Finally, can you compare, for each location, the litter size at different level of rodent availability? 
-
 \newpage
-## Exercise
-To consolidate what explained so far, consider the dataset xxx.csv.
 
-**TODO: DATASET TO ANALYSE**
-\newpage
+## A final exercise
+
+Finally, to consolidate what explained so far, consider the dataset `nerveConduction-workshop2.csv`. This contains measures of nerve conduction velocity in myelinated and unmyelinated fibres, in relation to their diameter.
+
+Explore the dataset, and visually determine relationships between the various variables. 
+Fit a linear model to explore the effect of Sex, Myelination and Diameter on conduction Velocity, exploring different interactions, and define what the various parameters estimated by your model mean. Which model best describes the data? What conclusions can you draw? 
