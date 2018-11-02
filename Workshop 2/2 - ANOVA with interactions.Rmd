@@ -135,7 +135,7 @@ The effect of weight on the response to the drug is statistically significant ($
 
 \newpage
 
-Another important value is the coefficient of determination ($R^2$, sometimes called deviance). This is a measure of how good the model is, or how much of the variation in the data it explains. $R^2$ is not a great way to compare two different models, since it depends on the number of parameters; that is, if we add an extra descriptor to our model, $R^2$ will always increase. For this reason, R reports also an ``adjusted'' version of it.
+Another important value is the coefficient of determination ($R^2$). This is a measure of how good the model is, or how much of the variation in the data it explains. $R^2$ is not a great way to compare two different models, since it depends on the number of parameters; that is, if we add an extra descriptor to our model, $R^2$ will always increase. For this reason, R reports also an ``adjusted'' version of it.
 In this case $adj. R^2=0.5789$; this means that our model describes/explains ~57.9% of the variability in our data, which is OK but not great. It means that there are other factors that we have not considered accounting for >40% of the variability! ^[What do you think is the maximum value of $R^2$? Why?]
 So, what are these other factors?
 
