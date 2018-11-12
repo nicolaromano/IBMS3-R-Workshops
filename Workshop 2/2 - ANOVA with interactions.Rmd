@@ -283,7 +283,7 @@ We could argue that #2 is better than #1, as it explains a much larger percentag
 
 Is it correct to say that since Sex does not have a statistically significant effect on the response, and since the value of adjusted $R^2$ is lower (albeit by a very small amount) we should drop Sex from the model, and only consider Age and Weight as predictors?
 One way of deciding this is to use the `anova` function to compare the two models.
-This tests the null hypothesis that the first model does not fit the data better than the second one. 
+This tests the null hypothesis that the most complex model does not fit the data better than the simpler one^[To be more precise, what this actually does is test whether the extra estimated coefficients in the more complex model are not different from 0. Note that you can use this function only if all of the parameters of the smallest model are also present in the more complex model.]. 
 
 \newpage
 
@@ -291,14 +291,14 @@ This tests the null hypothesis that the first model does not fit the data better
 anova(model, model.2)
 ```
 
-As expected, the p-value is very low, indicating that the second model fits the data better than the first one, and should be preferred to it. See also how much the residual sum of squares (RSS) has decreased, indicating that the model is much closer to the real data (hence the residuals (and their squared sum) are smaller).
+As expected, the p-value is very low, indicating that the second, more complex, model fits the data better than the first one, and should be preferred to it. See also how much the residual sum of squares (RSS) has decreased, indicating that the model is much closer to the real data (hence the residuals (and their squared sum) are smaller).
 
 Conversely 
 
 ```{r size = "small", width = 60}
 anova(model.2, model.3)
 ```
-The p-value is 0.64, indicating that we should refute the null hypothesis, meaning that our third model (with Age, Weight, and Sex) is not better than the simpler model.
+The p-value is 0.64, indicating that we cannot refute the null hypothesis, meaning that our third model (with Age, Weight, and Sex) is not better than the simpler model.
 
 R also provides a convenient function, called `drop1`, that removes one predictor at a time from a larger model. You can see that this confirms what we have seen above.^[Please, note that these are only very general guidelines. The choice of what to include in your model is not an easy one and different school of thoughts exist on whether it is better to always have a simpler model or a more complete one and often the answer is not straightforward. **The important thing is that any choice you make is based on a solid motivation.** Don't just stop at the p-value... think of what question you are asking and what your model tells you.]
 
