@@ -77,8 +77,6 @@ For this example, we start by loading the file `bromocriptine-workshop3.csv`
 bromocriptine <- read.csv("bromocriptine-workshop3.csv")
 ```
 
-\newpage
-
 ```{r width = 80, size = "small"}
 summary(bromocriptine)
 ```
@@ -117,7 +115,7 @@ legend("topleft", c("Control", "Bromocriptine (1 mg)",
 
 It is clear that there is a dose-dependent effect of the drug, and that, overall, the change of PRL levels over time can be studied using a linear model. If we look at the responses of single mice we can see that they start more or less at the same level, but they then rise in different ways (with different slopes) depending on the treatment, but also within the treatment.
 
-```{r echo = FALSE, warning = FALSE, fig.height = 3.5}
+```{r echo = FALSE, warning = FALSE, fig.height = 3.2}
 library(ggplot2)
 
 ggplot(aes(Time, PRL, group = interaction(Group, Mouse), col = Group),
@@ -137,8 +135,6 @@ stripchart(PRL ~ Group, data = bromocriptine,
            jitter = 0.1, vertical = TRUE, add = TRUE)
 ```
 
-\newpage
-
 Let's now proceed and build our model ^[Remember to load the nlme package first!]. We model the fixed effects Group and Time, as well as their interaction, and we model Mouse as the random factor. We create a random slope model, since what seems to be variable amongst subjects is the slope. We specify the random effect as `Time - 1 | Mouse`, meaning that we want to use mouse as a random effect, and we want to have random slopes over Time but not random intercepts (hence the -1).
 
 ```{r, size = "small", width = 80}
@@ -156,6 +152,8 @@ In this case, the intercept 17.23 is the PRL level for a mouse in the control gr
 - A correlation table. For most, if not all, of the situations you will be dealing with you can safely ignore this.
 - A summary of the distribution of residuals
 - The number of observations and groups. You can use this to check that you have correctly specified your experiment structure in the model. We have a total of 270 observations (you can check this by running `ncol(bromocriptine)`) and 45 groups (i.e. experimental units), corresponding to the 45 mice. This tells us that R has understood that those 270 observations are not independent, but come from 45 mice, therefore multiple observations are associated with the same mouse.
+
+\newpage
 
 We can check the distribution of residuals over the fitted values as usual (although the output has a slight different format compared to `lm`)
 
@@ -230,10 +228,74 @@ Should you want to test all of the times you could use `cov.reduce = unique`.
 
 
 \newpage
-# A split plot experiment
+# Nested design - a split plot experiment
 
-# Nested design
+We will now analyse a split plot experiment as an example of a nested design^[This example is taken from Pinheiro and Bates, 2000].
 
-We are interested in the effect of soil composition and genotype on the growth of bamboo. You have identified three different alleles of the BoSus1 gene, which codes for the enzyme sucrose synthase.
+For this examples we will use the Oats dataset that comes with the `nlme` package (this is automatically loaded when you load `nlme`). 
 
-You plant 
+These data comes from an example of split-plot design by Yates (1935). 
+
+The treatment structure used in the experiment was a 3 x 4 full factorial, with three varieties of oats and four concentrations of nitrogen. The experimental units were arranged into six blocks, each with three whole-plots subdivided into four subplots. The varieties of oats were assigned randomly to the whole-plots and the concentrations of nitrogen to the subplots. All four concentrations of nitrogen were used on each whole-plot.
+
+In this experiment we have six blocks of land, each of which is divided in 3 plots, each of which is further divided in 4 subplots.
+In each plot we grow one variety of grain (chosen at random), and in each subplot we use a different nitrogen concentration (nitrogen is used as a fertiliser). Because we have 4 subplots, we use 4 different nitrogen concentrations. The varieties of grain are called Golden Rain, Marvellous and Victory. Our output variable is the yield of the specific plot.
+This is a 3 x 4 full factorial design, meaning that each of the 3 variety was treated with each of the 4 nitrogen combinations (therefore it is "full", because all possible combinations are taken into account).
+
+We ask whether 1) nitrogen has an effect on yield and 2) whether the different varieties give different yields 3) if there is an interaction between the two.
+
+We start as usual by exploring and plotting the dataset
+
+```{r size = "small", width = 80}
+summary(Oats)
+```
+
+\newpage
+You can produce several interesting plots with these data, and I encourage you to do so. This is a plot summarising the relationship between the different variables.
+
+```{r echo = FALSE}
+ggplot(aes(nitro, yield), group = Block, data = Oats) +
+geom_line(aes(col = Block)) +
+facet_wrap(~Variety) + 
+xlab("Nitrogen concentration") +
+ylab("Yield") +
+theme(legend.position = "bottom")
+```
+
+We can see clear plot-to-plot differences, and it looks like yield grows approximatively linearly with nitrogen concentration.
+
+We now need to think about what are the random effects and how they are nested. We have 6 blocks, each divided in 3 plots (one per variety) and each divided in 4 subplots (one per nitrogen concentration).
+Because we only get one measure of yield from each subplot, we will not consider this as a random effect, but we will consider plots nested within blocks as our random effects.
+
+Let's create our model!
+```{r}
+model.oats <- lme(yield ~ nitro * Variety, data = Oats, random = ~ 1 | Block/Variety)
+```
+
+Note that we have created a random intercept model (look at the graph above and think why we have done that!). Also, we are using Blocks and plots (we use Variety, since each plot is associated with a variety) as our random effects, nested within each other. Note that we list the larger factors first, then those contained within. If we had multiple levels of nesting we could indicate them using multiple / (e.g. City/School/Class)
+
+Let's see the summary^[For a more concise output you can also do `anova(model.oats)`]
+```{r size = "small", width = 80}
+summary(model.oats)
+```
+
+We can see a clear effect of nitrogen, but not of variety, and no significant interactions.
+Also, note that the output is slightly different from the previous example in that
+- It tells us that there are 72 observations, from 18 plots (coded as Varieties) nested into 6 blocks.
+- The standard deviations in the random effect part of the summary are for intercept and residual rather than slope and residual as before, since we are fitting a random intercept model.
+
+Since the interaction terms are not significant we can drop them and get a simpler model
+
+```{r width = 80, size = "small"}
+model.oats.2 <- lme(yield ~ nitro + Variety, data = Oats, random = ~ 1 | Block/Variety)
+
+summary(model.oats.2)
+```
+
+The conclusion from the simpler model are essentially the same: a significant effect of nitrogen but not of variety. Also, the estimations for the random effects have only had minimal changes (look at the standard deviations for residuals and for the intercept).
+
+We can check that some the regressions make sense by plotting regression lines for different plots, just as we did before.
+
+-----
+
+We have only scratched the surface of how to use mixed-effects models, and there is a lot more to it. For the scope of this course what we have done is more than enough, but if you are interested there are a lot of resources around to become an expert in this topic!
