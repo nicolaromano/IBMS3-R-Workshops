@@ -8,11 +8,11 @@ List of workshops
 
 - Workshop 1: Plotting and manipulating data
 - Workshop 2: ANOVA and regression with interactions
+- Workshop 3: Mixed effects models
 
 In preparation
 
-- Workshop 3: Mixed effects models
-- Workshop 4: Discrete data
+- Workshop 4: Categorical data analysis
 - Workshop 5: Bootstrapping
 - Workshop 6: Classification
 - Workshop 7: Clustering
