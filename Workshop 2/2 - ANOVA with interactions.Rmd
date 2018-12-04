@@ -53,7 +53,7 @@ We start this workshop with a little refresher of linear models. **This also inc
 
 The general equation for such model is:
 
-$Y = X_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_nX_n + \epsilon$
+$Y = \beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_nX_n + \epsilon$
 
 Where:
 
@@ -82,7 +82,7 @@ Start by familiarising with the data. How many men and women are there? What ran
 Let's forget for a moment about the other variables and concentrate on the relation between Weight and Response; it looks like the largest effect is seen in heavier patients.
 
 ```{r echo = FALSE, fig.height=3.5}
-par(mar = c(5, 4, 1, 2))
+par(mar = c(5, 4, 2, 2))
 plot(Response ~ Weight, pressure, pch = 20, las = 1, cex = 0.7, bty = "n",
      xlab = "Weight (kg)", ylab = "Change in blood pressure (mmHg)", 
      cex.axis = 0.7, cex.lab = 0.75)
