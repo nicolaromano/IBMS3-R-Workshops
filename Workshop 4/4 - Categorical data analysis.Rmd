@@ -297,7 +297,55 @@ legend("topleft", legend = c("Smokers", "Non-smokers"), lwd = 2, cex = 0.5,
 lines(pred.age, pr.smokers, col = "orange", lwd = 2)
 lines(pred.age, pr.nonsmoker, col = "navy", lwd = 2)
 ```
+
+## So... can I use linear regression instead?
+
+As explained above, that is probably a bad solution. Let's see what happens if we use _lm_.
+
+```{r}
+# Proportion of dead subjects
+smoking$PercDead <- smoking$Dead/(smoking$Dead+smoking$Alive)
+model.lm <- lm(PercDead ~ AgeAdj + Smoker, data = smoking)
+```
+
+We model the percentage of dead subject against Age - 40 and Smoker.
 \newpage
+
+```{r size = "small", width = 80}
+summary(model.lm)
+```
+
+We can already see that we have a negative intercept meaning that, at age 40... -18% of patients are dead! Plotting model predictions shows that the model does not a good job, especially for non-smokers.
+
+```{r echo = FALSE}
+plot(Dead ~ Age, pch = 20, smoking, las = 1, bty = "n", 
+     xlim = c(40, 110), ylim = c(-20, 120), cex.axis = 0.85,
+     ylab = "% deaths", subset = smoking$Smoker == "Y", col = "orange", lwd = 2)
+points(Dead ~ Age, pch = 20, smoking, subset = smoking$Smoker == "N", 
+      col = "navy", lwd = 2)
+legend("topleft", legend = c("Smokers", "Non-smokers"), lwd = 2, cex = 0.5, 
+       col = c("orange", "navy"), pch = 20)
+abline(h = c(0, 100), lty = "dashed", col = "lightgray")
+age <- 0:70
+lines(age+40, predict(model.lm, list("AgeAdj" = 0:70, 
+                              "Smoker" = rep("Y", 71))) * 100, col = "orange", lwd = 2)
+lines(age+40, predict(model.lm, list("AgeAdj" = 0:70, 
+                              "Smoker" = rep("N", 71))) * 100, col = "navy", lwd = 2)
+```
+
+Similarly, consider a 120 year old smoker. What is the probability of he being dead?
+
+```{r}
+# From the logistic regression
+predict(model.2, list("AgeAdj" = 80, "Smoker" = "Y"), type = "response")
+# From the linear regression
+predict(model.lm, list("AgeAdj" = 80, "Smoker" = "Y"))
+
+```
+
+So, the logistic regression tells us that the odds of the patient being dead are 99.89%, while the linear model predicts a value of 138%!
+
+In summary, linear regression is not a good choice to model binary data or percentages.
 
 # Count data
 
