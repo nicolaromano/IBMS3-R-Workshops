@@ -1,0 +1,399 @@
+---
+title: "R workshop #4: GLMs for analysis of categorical and bounded data"
+author: "Nicola Romanò"
+
+output: 
+  tufte::tufte_handout: default
+tufte::tufte_html: default
+---
+  
+```{r setup, include=FALSE}
+library(tufte)
+library(xtable)
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(global.par = TRUE)
+
+# See https://stackoverflow.com/questions/25646333/code-chunk-font-size-in-rmarkdown-with-knitr-and-latex
+def.chunk.hook  <- knitr::knit_hooks$get("chunk")
+knitr::knit_hooks$set(chunk = function(x, options) 
+{
+  x <- def.chunk.hook(x, options)
+  ifelse(options$size != "normalsize", paste0("\\", options$size,"\n\n", x, "\n\n\\normalsize"), x)
+})
+
+# See https://stackoverflow.com/questions/23349525/how-to-set-knitr-chunk-output-width-on-a-per-chunk-basis
+knitr::knit_hooks$set(width=local({
+  .width <- 0
+  function(before, options, envir) {
+    if (before) .width <<- options(width=options$width)
+    else options(.width)
+  }
+}))
+
+```
+
+# Introduction
+  
+In previous workshops we have largely dealt with situations where a continuous variable was measured and we wanted to explain its variability as a function of one or more continuous or discrete variables.
+We have been using variations of the linear model to do so (remember, ANOVA can be also be considered just as a linear model).
+
+However, there are situations where a linear model is not the best solution to use. 
+
+Example of these include 
+
+- Data where we measure a binary variable (_e.g._ does the subject have diabetes? Yes/No) or a proportion/probability (_e.g._ what are the odds of getting pathology A, depending on variable B?). Both these cases are bounded between 0 and 1 (in the first case the variable can only be 0 or 1) or, if you prefer, 0% and 100%.
+
+- Count data. These are integer numbers, thus have a lower bound at 0 (you cannot count -20 cells!).
+
+Linear models are very powerful, but they are problematic to use with bounded or discrete data, as they assume a continuous range of values that can assume any value from $-\infty$ to $+\infty$.
+
+In this workshop we will see how to overcome some of these issues using generalised linear models (GLMs)^[Some people use the acronym GLiMs instead.].
+
+# Learning objectives
+
+After completing this workshop you will be able to:
+
+- Describe the concept of GLMs, and of link functions 
+
+- Create and interpret the output of GLMs for dealing with discrete and bounded data.
+
+\newpage
+
+# A note on $\chi^2$ and Fisher's tests.
+
+As you have seen extensively in lecture 12.3, the easiest way of dealing with count data is that of utilising the $\chi^2$ or Fisher's tests. Please refer to the lecture slides for examples on how to perform these tests in R, using the _chisq.test_ or the _fisher.test_ functions.
+
+# Introduction to generalised linear models (GLMs)
+
+At this point, you should be very familiar with the generic equation for a linear model:
+
+$Y = \beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_nX_n$
+
+As said above, this equation is not good to represent bounded data, say a proportion or probability that goes from 0 to 1.
+
+Indeed, if you were to model the proportion of patients with an illness depending on a certain parameter X with a linear model you may end up with something like:
+
+$\% patients = 0.02 + 2.5X$
+
+This means that if X is 50 your model will say that 125.02% of patients has the illness, which is not possible. Similarly, if X can take negative value you may find yourself with a negative % of patients which is, again, not possible.
+
+Therefore, we need to introduce some "non-linearity" in the equation above, that allows us to, for instance, constrain our response to between 0 and 1.
+
+**Generalised linear model** solve this by introducing a "link function" _f_ such that $f(Y)$ is a linear combination of the predictors. Also, these models relax the assumption that residuals are normally distributed (see below).
+
+&nbsp;
+
+$f(Y) = \beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_nX_n$
+
+&nbsp;
+
+For instance, if _f_ is some logarithm, it will constrain the output of the model to positive number, thus imposing a lower bound of 0 to our response^[The linear models you have use so far use an "identity link function", that is simply defined as $f(x) = x$. You can see how they are a special case of the generalised version we are introducing in this workshop.].
+
+Note that this is still a linear model! Although the relationship between $Y$ and $f(Y)$ as well as between $Y$ and the predictors $X_i$ is not linear, the relationship between $f(Y)$ and $X_i$ is!
+
+There are several link functions that are used in different context. We will only consider two of them in this workshop (the _logit_ and the _log_ link functions), but the reasoning is very similar for any function you may end up using^[Note that we cannot use any arbitrary function, but this is beyond the scope of this course!].
+
+\newpage
+
+# Logistic regression
+
+The first type of application of GLM that we are going to use is *logistic regression*^[You may also see this referred to as *logit regression*]. You have already been thought about it in the lectures, it is a type of regression used to model binary (0/1, yes/no) outcomes, as well as percentages/proportions.
+
+For example, we may want to model the odds of an event happening^[Remember from the lectures, $odds~=~\dfrac{p(X)}{1-p(X)}$] as a function of some variable(s). Since we want to limit the response to between 0 and 1, we model log(odds) instead.
+
+We can write:
+
+&nbsp;
+
+$log(odds(Y)) = log\Bigg(\dfrac{p(Y)}{1-p(Y)}\Bigg) = \beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_nX_n$
+
+&nbsp;
+
+with _p(Y)_ being the probability of Y happening.
+
+As explained above, this is a GLM; the link function used here (the log odds) is generally called a _logit_ link function. We can also rewrite the model in terms of odds of Y, by using the inverse link function^[In this case, since the link function is a logarithm, its inverse is the exponential.].
+
+&nbsp;
+
+$\dfrac{p(Y)}{1-p(Y)} = \dfrac {e^{\beta_0 + \beta_1X_1 + ... + \beta_nX_n}}{1 + e^{\beta_0 + \beta_1X_1 + ... + \beta_nX_n}} + \epsilon$
+
+&nbsp;
+
+The logit link function is only defined in the interval (0, 1) and its inverse looks like this:
+
+&nbsp;
+
+```{r echo = F, fig.height=2.5}
+x <- seq(-10, 10, 0.01)
+y <- exp(x)/(1+exp(x))
+
+par(mar = c(4, 4, 1, 2))
+plot(x, y, t = "l", pch = 20, xlab = "X", ylab = "Odds", 
+     las = 1, cex.axis = 0.8)
+```
+
+It is therefore a very good choice to model something that can only be between 0 and 1!
+
+\newpage
+
+# Binary data
+
+Let's see a practical example. We start with a binary outcome^[These data are taken from Payne, 1987, and also analysed in Faraway, 2006], namely whether babies develop respiratory disease in their first year of life, depending on their Gender and Feeding. In particular, three feeding types are being considered: "Bottle", "Breast", "Suppl".
+
+Start by loading the _babyfood_workshop4.csv_ file
+
+```{r}
+babyfood <- read.csv("babyfood_workshop4.csv")
+babyfood
+# We reorder the food factor to have Breast as the reference group
+babyfood$food <- factor(babyfood$food, levels = c("Breast", "Bottle", "Mix"))
+```
+
+We can now fit the model using the _glm_ function. We specify that the data comes from a  binomial distribution^[A binomial distribution is good to represent the probability of success in some trial.] and a logit link function^[Note that logit is the default value, so you can even omit specifying it].
+
+```{r}
+model <- glm(cbind(disease, nondisease) ~ sex + food, family = binomial(link = logit), 
+             data = babyfood)
+```
+
+You should be pretty familiar with this notation. We pass both the occurrences of disease and non disease, using _cbind_ (column bind) to "stick" the values together into a table with 2 columns. 
+
+Let's see the output of our model!
+
+```{r size = "small", width = 80}
+summary(model)
+```
+
+We see that the intercept is different from 0, as this represents the basal odds of disease for the control group (breast-fed boys). We see that there are also significant effects of both gender and food type.
+
+Now, you should be very careful interpreting these coefficients, because remember that we are modelling the _ln(odds)_, so we should exponentiate them to get the odds!
+
+So, for instance, for girls, $\hat\beta = -0.3126$
+
+```{r}
+exp(-0.3126)
+```
+
+This means that being a girl brings the odds of having respiratory disease to 73.2%, compared to the reference level (boys).
+You can calculate confidence intervals for the estimates using the _confint_ function^[Alternatively, as seen in the lecture, you can approximate the 95% CIs using  $exp(\hat\beta\pm1.96*SE_{\hat\beta})$. For example for $\hat\beta_1$ we have $exp(-0.3126\pm1.96*0.1410)$ giving $[0.5549041, 0.9644088]$, very similar to what calculated by _confint_. Note how these interval are not symmetric, since we are working on a non-linear scale.]. Remember to exponentiate them so that you can talk about odds, rather than log(odds)!
+
+```{r}
+exp(confint(model))
+```
+
+We can thus say that being a girl reduces the odds of having respiratory disease to 73.2% (95% CI: [55.3, 96.3]) compared to boys. You can interpret the other coefficients in a similar manner.
+
+Finally, the model's summary also reports a measure of _deviance_. This is a goodness-of-fit measure useful for GLMs; in general the lower the deviance, the better.
+
+The summary reports a Null deviance of 26.38 on 5 degrees of freedom and a Residual deviance of 0.72 on 2 degrees of freedom.
+The null deviance refers to the intercept-only model (essentially a null model where we say that neither Sex or Feeding have an effect on the odds of disease). Since we have 6 observations, that null modle has 5 degrees of freedom. Our current model adds 3 variables (1 dummy for Gender, 2 dummies for food), thus has only 2 degrees of freedom, but has a much reduced variance, indicating that our model fits the data much better than an intercept-only model!
+
+As we have seen in a previous workshop, we can use the _drop1_ function to see the contribution of each model parameter.
+
+```{r}
+drop1(model)
+```
+
+Not surprisingly, we see that removing either Sex or Food from the model results in an increased deviance (and an increased AIC, another goodness-of-fit measure for which, again, the lower the better.)
+
+Obviously, when looking at this type of data we always need to be very aware that many other confounding factors (e.g. socioeconomic status) may be important to consider.
+
+## Percentages
+
+The same reasoning applies for datasets where we have measured a probability, or a percentage.
+
+For instance, let's load the file _smoking_workshop4.csv_. This contains survival data^[From Doll, 2004] from 24321 male UK doctors born between 1900 and 1930, in relation to whether they are smokers or not (this only includes life-long smokers).
+
+```{r}
+smoking <- read.csv("smoking_workshop4.csv")
+head(smoking)
+```
+
+Just as before, we can fit a GLM.
+
+Try plotting the data, for example I have got this graph^[Remember to share your code on the forum!].
+
+```{r echo = F}
+plot(Dead ~ Age, pch = 20, smoking, las = 1, bty = "n", t = "o",
+     ylab = "% deaths", subset = smoking$Smoker == "Y", col = "orange", lwd = 2)
+lines(Dead ~ Age, pch = 20, t = "o", smoking, subset = smoking$Smoker == "N", 
+      col = "navy", lwd = 2)
+legend("topleft", legend = c("Smokers", "Non-smokers"), lwd = 2, cex = 0.5, 
+       col = c("orange", "navy"), pch = 20)
+
+```
+
+What would you conclude from looking at the data?
+
+Let's now fit a GLM to these data
+
+```{r}
+smoking$AgeAdj <- smoking$Age - 40
+
+model.2 <- glm(cbind(Dead, Alive) ~ AgeAdj + Smoker, 
+               family = binomial(link="logit"), data = smoking)
+```
+```{r width = 80, size = "small"}
+summary(model.2)
+```
+
+You will note that rather than Age I have modelled Age - 40; this will only influence the intercept, making it easier to interpret. It will not influence the other coefficients^[Try it by yourself! See what happens when you use Age instead. If this is confusing, try to do it on a simple linear model, it will be more intuitive there.].
+
+The intercept is ~ -5.7. This represent the basal log(odds) of dying for someone at the reference level (non smoker) and at AgeAdj = 0. Since AgeAdj = Age - 40, the intercept shows the basal log(odds) for a 40 year old non smoker^[If we modelled Age and not AgeAdj, the intercept would refer to 0 year old, which is probably less interesting.].
+
+So, the odds of dying for a 40 year old non smoker are
+
+```{r}
+exp(-5.709451)
+```
+
+Remember, these are odds, so they are $\dfrac{P(dying)}{1-P(dying)}$; this value is very low, representative of the fact that all of the subjects were alive at age 40.
+
+We can also see a strong effect of Age on probability of dying^[I guess we didn't really need a model to say that!], and also a significant effect of smoking.
+In particular, smoking increases the odds of dying by 
+
+```{r}
+exp(1.305192)
+```
+
+The coefficient for Age is interpreted as the log odds-ratio for 1 year age difference.
+
+That is: $\dfrac{odds(dying, age~x+1)}{odds(dying,age~x)}$, where odds are defined as above.
+
+Finally, we can graphically check that our model fits the data correctly.
+
+We can ask the model to predict the values at different ages for smokers and non smokers. We use the _predict_ function for this. This function wants a list with elements named as the parameters of the model. 
+
+For example, if we wanted to predict the log odds of dying for smokers and non smokers from 40 to 100 years old in steps of 1 year we could do the following:
+
+```{r}
+pred.age <- 40:100
+
+smokers <- list(AgeAdj = pred.age - 40,
+                Smoker = rep("Y", length(pred.age)))
+
+nonsmokers <- list(AgeAdj = pred.age - 40,
+                   Smoker = rep("N", length(pred.age)))
+```
+
+We can now use _predict_ to ask the model what the log(odds) would be for these new data points^[The `type = "response"` parameter gives us prediction in terms of odds, rather than log(odds). If you omit it you will have to exponentiate the results. In general, it will allow you to see the prediction of the model in terms of Y rather than _f(Y)_, where _f_ is the link function.].
+
+```{r}
+pr.smokers <- predict(model.2, type = "response", newdata = smokers) * 100
+pr.nonsmoker <- predict(model.2, type = "response", newdata = nonsmokers) * 100
+```
+
+We can now plot the prediction on top of our data, showing that the model works extremely well!
+
+```{r echo = FALSE}
+plot(Dead ~ Age, pch = 20, smoking, las = 1, bty = "n",
+     ylab = "% deaths", subset = smoking$Smoker == "Y", col = "orange", lwd = 2)
+points(Dead ~ Age, pch = 20, smoking, subset = smoking$Smoker == "N", 
+      col = "navy", lwd = 2)
+legend("topleft", legend = c("Smokers", "Non-smokers"), lwd = 2, cex = 0.5, 
+       col = c("orange", "navy"), pch = 20)
+
+
+lines(pred.age, pr.smokers, col = "orange", lwd = 2)
+lines(pred.age, pr.nonsmoker, col = "navy", lwd = 2)
+```
+\newpage
+
+# Count data
+
+Finally, we are going to see an example of model of counts. These are often modelled using what is called *count regression*, or *Poisson regression*.
+
+This is done with a GLM modelling Poisson data and a log link function^[Just as above, we choose a Poisson distribution because it is good to model counts, as it is a discrete distribution, and the log link to limit the output to $Y~>~0$. Note that the Poisson distribution is not always the best choice for counts, other options are available. Specifically, you may want to avoid Poisson regression in cases of large numbers of zeroes in your data (zero-inflated distributions are better suited to that) or in case of overdispersion of the data (negative binomial is better suited to this case).], simply obtained by specifying `family=poisson(link=log)` in the call to _glm_.
+
+
+This means modelling
+
+&nbsp;
+
+$log(Y) = \beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_nX_n$
+
+&nbsp;
+
+Let's consider the data in _lizards-workshop4.csv_. This shows the counts of three species of lizards (A, B, and C) in three different locations (Loc1 to Loc3). For each location lizards were counted in three different plots of land.
+
+```{r}
+lizards <- read.csv("lizards-workshop4.csv")
+summary(lizards)
+head(lizards)
+```
+\newpage
+
+We can start by plotting the data:
+
+```{r warning=FALSE, message=FALSE, echo=FALSE, fig.height=3.5}
+library(ggplot2)
+
+ggplot(lizards, aes(Count, fill = Species)) +
+  geom_histogram(alpha = 0.5, binwidth = 1) +
+  xlab("Number of lizards") +
+  ylab("Frequency") + 
+  facet_wrap(~Location, nrow = 2)
+```
+
+It looks like in locations 1 and 2, species A and C are in similar numbers, higher than species B. However, in Location 3, all three species seem to have a similar frequency.
+
+This is not an obvious situation to analyse, let's see how to use a GLM to model it!
+For simplicity, we will consider plots as independent, although you should have spotted that this is a nested design, therefore the random effect from the plot should, in theory, be accounted for! You can indeed create a mixed-effect GLM^[For instance, using the _glmm_ function in the _glmm_ package or the _glmer_ function in the _lme4_ package], but we will not cover that here, so I leave that to your curiosity!
+
+We start by creating the GLM. Since we noted a clear Species/Location interaction, we add that to our model
+
+```{r}
+model.3 <- glm(Count ~ Species * Location, data = lizards, family = poisson(link = log))
+```
+
+```{r size = "small", width = 80}
+summary(model.3)
+```
+
+This is quite a complex output. Let's decipher it!
+First of all, remember what we are modelling:
+
+&nbsp;
+
+$log(Counts) = \beta_0 + \beta_1 * SpeciesB + \beta_2 * SpeciesC + \beta_3 * Location2 + \beta_4 * Location3 + (\text{interactions, with coefficients }\beta_5 \text{to } \beta_8)$
+
+&nbsp;
+
+Where SpeciesB and SpeciesC are the two dummy variables used to represent the three-level factor Species and and Location2 and Location3 are the two dummy variables used to represent Locations.
+
+Thus, $\hat\beta_0$ is the log(mean counts) for the basal level (Species A in location 1).
+
+Indeed, if we check the mean manually with:
+
+```{r}
+mean(lizards$Count[lizards$Location == "Loc1" & lizards$Species == "A"])
+```
+
+We can see that the model approximates it pretty well!
+
+```{r}
+exp(3.26767) # exp(beta1)
+```
+
+You can interpret the other coefficients in a similar way.
+For example $\beta_{SpeciesC} = -0.08961$ tells us that the effect of species C is to decreases the counts to $e^{-0.08961}\approx0.91\approx91\%$ of the reference level.
+Again, we can calculate 95% CIs using _confint_.
+
+```{r}
+exp(confint(model.3))
+```
+
+So for SpeciesC the counts are 91% (CI = (69.2%, 120%)) of the reference level.
+
+We can also see that there is a significant interaction of Species B and Location 3. This is not unexpected. Interpreting interaction coefficients is always tricky, but luckily we can use our trusted friend _emmeans_!
+
+```{r warning=FALSE, message=FALSE, width = 80, size = "small"}
+library(emmeans)
+marginals <- emmeans(model.3, ~ Species * Location)
+pairs(marginals, by = "Species", type = "response")
+```
+
+As expected, the only statistically significant pairwise ratio is between location 1 and 3 for species B. The estimate is 0.28, meaning that counts for species B in Loc3 are about $1/0.28\approx3.6$ times the counts for species B in location 1 (or that the counts in location 1 are approximately 28% of those in location 3)^[A similar result can be obtained directly by summing the exponentiated $\hat\beta$].
+
+This workshop should have given you the basic tools to analyse binary, proportion, and count data. As always, we are only scratching the surface here, but this should be quite a good start, and if you are interested in these topics there is a lot to be found!
+This is the most advanced type of linear model that we are going to look at this year. Next semester we will look at classification and prediction models, as well as some more advanced statistical techniques.
