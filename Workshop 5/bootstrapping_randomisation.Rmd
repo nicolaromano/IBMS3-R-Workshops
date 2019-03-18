@@ -1,0 +1,103 @@
+---
+title: "Bootstrapping and Randomisation tests"
+author: "MI Stefan"
+date: "Semester 2, 2018/19"
+output: 
+  tufte::tufte_handout: default
+  tufte::tufte_html: default
+---
+
+
+```{r setup, include=FALSE}
+library(tufte)
+library(xtable)
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(global.par = TRUE)
+# See https://stackoverflow.com/questions/25646333/code-chunk-font-size-in-rmarkdown-with-knitr-and-latex
+def.chunk.hook  <- knitr::knit_hooks$get("chunk")
+knitr::knit_hooks$set(chunk = function(x, options) 
+  {
+  x <- def.chunk.hook(x, options)
+  ifelse(options$size != "normalsize", paste0("\\", options$size,"\n\n", x, "\n\n\\normalsize"), x)
+  })
+# See https://stackoverflow.com/questions/23349525/how-to-set-knitr-chunk-output-width-on-a-per-chunk-basis
+knitr::knit_hooks$set(width=local({
+    .width <- 0
+    function(before, options, envir) {
+        if (before) .width <<- options(width=options$width)
+        else options(.width)
+    }
+}))
+```
+
+# Introduction
+
+# Learning Objectives
+
+# Rattus Binomialis
+
+## Problem
+
+A rat is performing a "2-alternative forced choice" (2AFC) task in which it must identify an odor presented at a central port. If it detects odor 'A' it should choose the right-hand port for a reward; if it detects odor 'B' is should choose the other port.
+
+Early in the rat's training, you want ot know whether the rat has learned the task yet. So you decide to do a test and keep track of his correct rate for a block of 50 trials. After 50 trials, we see that the rat has gotten 31 trials correct (19 trials wrong) for an average of 62 percent correct. You want to know if the rat has learned the task or if he is still guessing.
+
+## All hypothesis tests are the same ...
+
+Since we are performing a hypothesis test, we need to ask ourselves what the world would look like if the Null Hypothesis was correct. What is the Null Hypothesis? 
+
+___________________________________________________________________
+
+## Simulate one experiment under H0
+
+Assume the Null Hpothesis is true, then the rat is just guessing, with a 50-50 chance of getting the correct answer in each trial. If we code a correct guess as "1" and a wrong guess as "0", how would you simulate a block of 50 trials? ^[Recall what you learned in lecture 20 about drawing random numbers in R.]
+
+\newpage
+
+```{r}
+block <- sample(c(0,1),50,replace=TRUE)
+block
+```
+
+Out of the 50 trials, how many did the rat guess correctly? 
+
+```{r}
+correct <- sum(block)
+```
+
+## Simulate 10000 experiments under H0
+
+Now is where the simulation-based magic happens. Let's say we have not just 1 rat that behaves as if H0 is true, but ten thousand rats. How would you simulate that?[Recall what you learned about loops in R.]
+
+\newpage
+
+First, we define a vector that will hold the number of correct answers per trial.
+
+```{r}
+number_correct <- vector(mode="numeric")
+```
+
+Next, we loop over a counter that goes from 1 to 10000. In each loop, we do a trial just like the one we did before and store the result in \verb-number_correct-
+
+```{r}
+for (i )
+
+```
+
+
+
+
+
+
+
+# Do men and women have different forearm lengths?
+
+
+
+
+
+
+# Acknowledgments
+
+
+
