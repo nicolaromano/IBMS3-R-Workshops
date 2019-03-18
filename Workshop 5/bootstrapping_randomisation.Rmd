@@ -67,7 +67,7 @@ correct <- sum(block)
 
 ## Simulate 10000 experiments under H0
 
-Now is where the simulation-based magic happens. Let's say we have not just 1 rat that behaves as if H0 is true, but ten thousand rats. How would you simulate that?[Recall what you learned about loops in R.]
+Now is where the simulation-based magic happens. Let's say we have not just 1 rat that behaves as if H0 is true, but ten thousand rats. How would you simulate that?^[Recall what you learned about loops in R.]
 
 \newpage
 
@@ -80,13 +80,47 @@ number_correct <- vector(mode="numeric")
 Next, we loop over a counter that goes from 1 to 10000. In each loop, we do a trial just like the one we did before and store the result in \verb-number_correct-
 
 ```{r}
-for (i )
-
+for (i in 1:10000){
+  block <- sample(c(0,1),50,replace=TRUE)
+  correct <- sum(block)
+  number_correct = c(number_correct, correct)
+}
 ```
 
+## Visualise simulation results
+
+We have now run the experiment 10000 times assuming H0 is true, and kept track of the number of correct guesses for each experiment. How can we best visualise our results? For instance, by drawing a histogram. Before we do that, answer the following questions for yourself:
+
+- What would you expect the histogram to look like? 
+- Where would you expect the peak to be?
+- Do you remember the name of what this histogram shows you?
+
+\newpage
+
+```{r}
+hist(number_correct, col="seagreen2", main="Null distribution", xlab = "number of correct guesses", ylab = "number of experiments")
+```
+
+The histogram shows the "Null distribution", i.e. the distribution of outcomes, assuming the Null Hypothesis is correct. 
+
+## How likely is it to see my experimental results if H0 is true? 
+
+As in any hypothesis test, we ask ourselves: "How likely are we to see results as extreme (or even more extreme) as in our experiments if H0 is true?"
 
 
+First, let's visualise our experimental result (31 out of 50 correct) by adding it as a line to the histogram. This can be done using the abline() function^[Haven't encountered this function before? Remember, you can get more information about any function in R by using help().], which draws a straight line at a given set of coordinates. What do you see? 
 
+
+```{r}
+hist(number_correct, col="seagreen2", main="Null distribution", xlab = "number of correct guesses", ylab = "number of experiments")
+abline(v=31,col="midnightblue",lwd=2)
+```
+
+Most of the experiments in the Null distribution are to the left of the blue line (i.e. less extreme than the results we found). But sometimes, even a rat that is guessing gets 31 or more trials correct. But how often exactly? Well, we can just count! 
+
+```{r}
+sum(number_correct>=31)
+```
 
 
 
