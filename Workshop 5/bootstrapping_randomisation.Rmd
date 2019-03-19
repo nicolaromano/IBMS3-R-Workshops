@@ -71,7 +71,7 @@ Now is where the simulation-based magic happens. Let's say we have not just 1 ra
 
 \newpage
 
-First, we define a vector that will hold the number of correct answers per trial.
+First, we define a vector that will hold the number of correct answers per experiment.
 
 ```{r}
 number_correct <- vector(mode="numeric")
@@ -80,7 +80,8 @@ number_correct <- vector(mode="numeric")
 Next, we loop over a counter that goes from 1 to 10000. In each loop, we do a trial just like the one we did before and store the result in \verb-number_correct-
 
 ```{r}
-for (i in 1:10000){
+nexp <- 10000
+for (i in 1:nexp){
   block <- sample(c(0,1),50,replace=TRUE)
   correct <- sum(block)
   number_correct = c(number_correct, correct)
@@ -121,6 +122,38 @@ Most of the experiments in the Null distribution are to the left of the blue lin
 ```{r}
 sum(number_correct>=31)
 ```
+
+But really, what we want is not the absolute number, but the proportion of trials under H0 that gave 31 or more correct. Why? Because *that is our p-value*.
+
+```{r}
+p = sum(number_correct>=31)/nexp
+
+```
+
+## Interpreting the p-value and coming to a conclusion
+
+- From this p-value, what do you conclude?
+- If two of you both run the simulation, do you get the same p value?^[Think back to what you learned in lecture 20.1/2 about the exactness of randomisation-based solution.]
+- Is ten thousand trials enough? Should there be more? What would you need to change in the code?
+
+## Bonus: No-loops solution!
+ 
+Reading the last section, you may have tried to set \verb=nexp= up to one hundred thousand or even a million. You will have found that the resulting p value is more precise, but also that simulations take longer to run. This is because loops are quite time-consuming. Is there a way of achieving what we did without loops? 
+
+\newpage
+
+Yes, there is! If you think about it, we pick between 0 and 1 a total of 50 times per experiment, and a total of \verb=nexp= experiment. So, let's just toss that coin \(50\times nexp\) times to begin with. All we have to do then is be clever about how to sum the number of correct guesses per trial.
+
+```{r}
+all_experiments <- sample(c(0,1), 50*nexp, replace=TRUE)
+all_experiments <- matrix(all_experiments,ncol=50)
+number_correct <- rowSums(all_experiments)
+p = sum(number_correct>=31)/nexp
+p
+```
+
+
+
 
 
 
