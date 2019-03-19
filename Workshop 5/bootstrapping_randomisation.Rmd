@@ -159,6 +159,54 @@ p
 
 # Do men and women have different forearm lengths?
 
+## Dataset
+
+In the past, you have learned about t-tests using the question of whether men and women have different forearm lengths as an example. In the 1017/18 academic year, a group of ZJE first-year students did the experiment as follows: Each student measured their forearm length (in mm) and entered their (self-identified) gender and their forearm length into a table. The results are in file \verb=forearm_length.csv= 
+
+Let's start by importing the dataset into R.
+
+```{r}
+forearm_data <- read.csv("forearm_length.csv", header=TRUE)
+head(forearm_data)
+```
+
+Let's also take a quick look at the dataset.^[In the following code, why do we define lowx and highx?]
+
+```{r}
+lowx <- min(forearm_data$ForearmLength)-10
+highx <- max(forearm_data$ForearmLength)+10
+
+hist(forearm_data[forearm_data$Gender=="M","ForearmLength"], 
+     col=adjustcolor("orange2", alpha.f=0.2), xlim=c(lowx,highx), 
+     xlab="", ylab="", main="M") 
+
+hist(forearm_data[forearm_data$Gender=="F","ForearmLength"], 
+     col=adjustcolor( "turquoise", alpha.f = 0.2), xlim=c(lowx,highx), 
+     xlab="Forearm Length (mm)", 
+     main="F", ylab="") 
+```
+
+What is the difference between mean male and female forearm length in our dataset? 
+
+```{r}
+mean_M <- mean(forearm_data[forearm_data$Gender=="M","ForearmLength"])
+mean_F <- mean(forearm_data[forearm_data$Gender=="F","ForearmLength"])
+diff <- mean_M - mean_F
+diff
+```
+
+You can see that the difference is `r round(diff)` mm.
+
+
+## Simulate one experiment under H0
+
+Let's now pretend that we don't know how to do a t-test (or that we do not feel comfortable performing a t-test)^[Recall the conditions that need to be met for a t-test!] Is there a bootstrap-based alternative that we can use?
+
+Yes, there is. Again, the key is to ask ourselves: Would we be likely to see a difference as or more extreme than the difference we saw if the Null Hypothesis was true? 
+
+In our case, the Null Hypothesis is that there is no difference in forearm length between women and men, or in other words, that all forearm lengths in the sample are drawn from the same underlying population. What do we know about that population? Not very much, except that all our data has been drawn from it. So, the best available representation of our population is our dataset.
+
+A bootstrap sample, then, is a random sample from that combined population.
 
 
 
