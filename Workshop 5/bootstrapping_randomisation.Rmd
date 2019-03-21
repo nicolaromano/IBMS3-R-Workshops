@@ -26,11 +26,13 @@ knitr::knit_hooks$set(width=local({
     function(before, options, envir) {
         if (before) .width <<- options(width=options$width)
         else options(.width)
-    }
+    } 
 }))
 ```
 
 # Introduction
+
+This R workshop accompanies lecture 20.1/20.2 on Bootstrapping and Randomisation-based methods. We will go through two examples. In the first example, a rat performs an odour-based discrimination task, and we use a randomisation-based method to ascertain whether the rat has learned the task or is guessing. In the second example, we use data on gender and forearm length among Chinese students and perform a Bootstrapping test to ask whether forearm length differs between men and women.
 
 # Learning Objectives
 
