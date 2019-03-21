@@ -120,7 +120,7 @@ The histogram shows the "Null distribution", i.e. the distribution of outcomes, 
 As in any hypothesis test, we ask ourselves: "How likely are we to see results as extreme (or even more extreme) as in our experiments if H0 is true?"
 
 
-First, let's visualise our experimental result (31 out of 50 correct) by adding it as a line to the histogram. This can be done using the abline() function^[Haven't encountered this function before? Remember, you can get more information about any function in R by using help().], which draws a straight line at a given set of coordinates. What do you see? 
+First, let's visualise our experimental result (31 out of 50 correct) by adding it as a line to the histogram. This can be done using the \verb=abline()= function^[Haven't encountered this function before? Remember, you can get more information about any function in R by using help().], which draws a straight line at a given set of coordinates. What do you see? 
 
 
 ```{r}
