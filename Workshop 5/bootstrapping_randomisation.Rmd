@@ -289,5 +289,8 @@ t.test(ForearmLength ~ Gender, data = forearm_data)
 
 # Acknowledgments
 
+The "Binomial Rat" example was adapted from an exercise originally designed by Richard T. Born, which we used course for graduate students at Harvard Medical School, the Quantitative Methods Boot Camp: The online course materials can be found here:https://github.com/MelanieIStefan/QMBC and a paper on the course here: https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004208 
+
+The "Arm Length" example is an adaptation of an exercise designed by Crispin Jordan for teaching in Biomedical Sciences 2 at the University of Edinburgh. The data was collected by first-year ZJE students in 2017/18. 
 
 
