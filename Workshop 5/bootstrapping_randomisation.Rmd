@@ -186,12 +186,12 @@ hist(forearm_data[forearm_data$Gender=="F","ForearmLength"],
      main="F", ylab="") 
 ```
 
-What is the difference between mean male and female forearm length in our dataset? 
+What is the difference between mean male and female forearm length in our dataset?^{As you can see, we take the absolute difference. Why?} 
 
 ```{r}
 mean_M <- mean(forearm_data[forearm_data$Gender=="M","ForearmLength"])
 mean_F <- mean(forearm_data[forearm_data$Gender=="F","ForearmLength"])
-diff <- mean_M - mean_F
+diff <- abs(mean_M - mean_F)
 diff
 ```
 
@@ -206,7 +206,82 @@ Yes, there is. Again, the key is to ask ourselves: Would we be likely to see a d
 
 In our case, the Null Hypothesis is that there is no difference in forearm length between women and men, or in other words, that all forearm lengths in the sample are drawn from the same underlying population. What do we know about that population? Not very much, except that all our data has been drawn from it. So, the best available representation of our population is our dataset.
 
-A bootstrap sample, then, is a random sample from that combined population.
+A bootstrap sample, then, is a random sample from that combined population (with replacement). One experiment consists of taking one sample we call "Male" and one sample we call "Female". How big should both samples be? 
+
+Since we are basically simulating our real-life experiment, it makes sense to have samples the same size as in our original experiment.
+
+```{r}
+n_male <- sum(forearm_data$Gender=="M")
+n_female <- sum(forearm_data$Gender=="F")
+```
+
+This gives us the size for both bootstrap samples.^{How would you convince yourself that this works and we have counted correctly?}. Now, let's take the actual sample
+
+```{r}
+male <- sample(forearm_data$ForearmLength, n_male, replace=TRUE)
+female <- sample(forearm_data$ForearmLength, n_female, replace=TRUE)
+
+lowx <- min(forearm_data$ForearmLength)-10
+highx <- max(forearm_data$ForearmLength)+10
+
+hist(forearm_data[forearm_data$Gender=="M","ForearmLength"], 
+     col=adjustcolor("orange2", alpha.f=0.2), xlim=c(lowx,highx), 
+     xlab="", ylab="", main="M") 
+
+hist(forearm_data[forearm_data$Gender=="F","ForearmLength"], 
+     col=adjustcolor( "turquoise", alpha.f = 0.2), xlim=c(lowx,highx), 
+     xlab="Forearm Length (mm)", 
+     main="F", ylab="") 
+
+sample_mean_M <- mean(male)
+sample_mean_F <- mean(female)
+sample_diff <- abs(sample_mean_M - sample_mean_F)
+
+```
+
+## Simulate 10000 experiments under H0
+
+Now again, in order to get a p value, we want to repeat this bootstrap experiment many times, for instance ten thousand. Try and write down the code yourself before turning the page!
+
+\newpage
+ 
+```{r}
+experiments <- 10000
+diffs <- vector(mode="numeric")
+ 
+for (i in 1:experiments){
+  male <- sample(forearm_data$ForearmLength, n_male, replace=TRUE)  
+  female <- sample(forearm_data$ForearmLength, n_female, replace=TRUE)
+  sample_mean_M <- mean(male)
+  sample_mean_F <- mean(female)
+  sample_diff <- abs(sample_mean_M - sample_mean_F)
+  diffs <- c(diffs,sample_diff)
+ }
+```
+
+Visualising the Null distribution and plotting the p value is very similar to our previous example
+
+```{r}
+xmax <- max(diffs,diff)
+hist(diffs, main="Null distribution", xlab="absolute difference", col="indianred1",xlim=c(0,xmax+2))
+abline(v=diff,col="indianred4",lwd=2) 
+pval <- sum(diffs>=diff)/experiments
+pval
+```
+
+
+What is your p value? How do you interpret it? Do you see potential problems with it? How would you report it? 
+
+Your simulation will tell you that your p value is 0. Zero means an outcome is mathematically impossible. But we know that this is not exactly true. We know that there is at least one possible sample that gives a difference like the one we found in the experiment (namely the sample that we took during the experiment). So, reporting p=0 is problematic. The only thing we can say is that it is less than one in the total number of bootstrap experiments we did, so in this case less than 1 in ten thousand: \(p < 0.0001\)
+
+## Compare to a "traditional" t-test
+
+Last year, you learned how to do a t-test on the same data in R.^[Before we do this here, convince yourself that the conditions for doing a t-test are met!] Let's quickly run the t-test and compare it to the result you had! 
+
+```{r}
+t.test(ForearmLength ~ Gender, data = forearm_data)
+```
+
 
 
 
