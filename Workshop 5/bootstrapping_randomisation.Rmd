@@ -36,13 +36,22 @@ This R workshop accompanies lecture 20.1/20.2 on Bootstrapping and Randomisation
 
 # Learning Objectives
 
+After going through this, you will be able to 
+
+- explain the principles of randomisation-based hypothesis tests
+- use "for" loops in R 
+- draw random numbers in R
+- draw a Bootstrap sample from a dataset in R
+- perform randomisation tests and critically interpret the outcome
+
+
 # Rattus Binomialis
 
 ## Problem
 
 A rat is performing a "2-alternative forced choice" (2AFC) task in which it must identify an odor presented at a central port. If it detects odor 'A' it should choose the right-hand port for a reward; if it detects odor 'B' is should choose the other port.
 
-Early in the rat's training, you want ot know whether the rat has learned the task yet. So you decide to do a test and keep track of his correct rate for a block of 50 trials. After 50 trials, we see that the rat has gotten 31 trials correct (19 trials wrong) for an average of 62 percent correct. You want to know if the rat has learned the task or if he is still guessing.
+Early in the rat's training, you want to know whether the rat has learned the task yet. So you decide to do a test and keep track of his correct rate for a block of 50 trials. After 50 trials, we see that the rat has gotten 31 trials correct (19 trials wrong) for an average of 62 percent correct. You want to know if the rat has learned the task or if he is still guessing.
 
 ## All hypothesis tests are the same ...
 
@@ -52,7 +61,7 @@ ___________________________________________________________________
 
 ## Simulate one experiment under H0
 
-Assume the Null Hpothesis is true, then the rat is just guessing, with a 50-50 chance of getting the correct answer in each trial. If we code a correct guess as "1" and a wrong guess as "0", how would you simulate a block of 50 trials? ^[Recall what you learned in lecture 20 about drawing random numbers in R.]
+Assume the Null Hypothesis is true, then the rat is just guessing, with a 50-50 chance of getting the correct answer in each trial. If we code a correct guess as "1" and a wrong guess as "0", how would you simulate a block of 50 trials? ^[Recall what you learned in lecture 20 about drawing random numbers in R.]
 
 \newpage
 
