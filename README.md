@@ -10,10 +10,10 @@ List of workshops
 - Workshop 2: ANOVA and regression with interactions
 - Workshop 3: Mixed effects models
 - Workshop 4: Categorical data analysis
+- Workshop 5: Bootstrapping and randomisation
 
 In preparation
 
-- Workshop 5: Bootstrapping
 - Workshop 6: Classification
 - Workshop 7: Clustering
 - Workshop 8: PCA
