@@ -59,7 +59,7 @@ Since we are performing a hypothesis test, we need to ask ourselves what the wor
 
 ___________________________________________________________________
 
-## Simulate one experiment under H0
+## Simulate one experiment under H~0~
 
 Assume the Null Hypothesis is true, then the rat is just guessing, with a 50-50 chance of getting the correct answer in each trial. If we code a correct guess as "1" and a wrong guess as "0", how would you simulate a block of 50 trials? ^[Recall what you learned in lecture 20 about drawing random numbers in R.]
 
@@ -76,9 +76,9 @@ Out of the 50 trials, how many did the rat guess correctly?
 correct <- sum(block)
 ```
 
-## Simulate 10000 experiments under H0
+## Simulate 10000 experiments under H~0~
 
-Now is where the simulation-based magic happens. Let's say we have not just 1 rat that behaves as if H0 is true, but ten thousand rats. How would you simulate that?^[Recall what you learned about loops in R.]
+Now is where the simulation-based magic happens. Let's say we have not just 1 rat that behaves as if H~0~ is true, but ten thousand rats. How would you simulate that?^[Recall what you learned about loops in R.]
 
 \newpage
 
@@ -101,7 +101,7 @@ for (i in 1:nexp){
 
 ## Visualise simulation results
 
-We have now run the experiment 10000 times assuming H0 is true, and kept track of the number of correct guesses for each experiment. How can we best visualise our results? For instance, by drawing a histogram. Before we do that, answer the following questions for yourself:
+We have now run the experiment 10000 times assuming H~0~ is true, and kept track of the number of correct guesses for each experiment. How can we best visualise our results? For instance, by drawing a histogram. Before we do that, answer the following questions for yourself:
 
 - What would you expect the histogram to look like? 
 - Where would you expect the peak to be?
@@ -115,9 +115,9 @@ hist(number_correct, col="seagreen2", main="Null distribution", xlab = "number o
 
 The histogram shows the "Null distribution", i.e. the distribution of outcomes, assuming the Null Hypothesis is correct. 
 
-## How likely is it to see my experimental results if H0 is true? 
+## How likely is it to see my experimental results if H~0~ is true? 
 
-As in any hypothesis test, we ask ourselves: "How likely are we to see results as extreme (or even more extreme) as in our experiments if H0 is true?"
+As in any hypothesis test, we ask ourselves: "How likely are we to see results as extreme (or even more extreme) as in our experiments if H~0~ is true?"
 
 
 First, let's visualise our experimental result (31 out of 50 correct) by adding it as a line to the histogram. This can be done using the \verb=abline()= function^[Haven't encountered this function before? Remember, you can get more information about any function in R by using help().], which draws a straight line at a given set of coordinates. What do you see? 
@@ -134,11 +134,11 @@ Most of the experiments in the Null distribution are to the left of the blue lin
 sum(number_correct>=31)
 ```
 
-But really, what we want is not the absolute number, but the proportion of trials under H0 that gave 31 or more correct. Why? Because *that is our p-value*.
+But really, what we want is not the absolute number, but the proportion of trials under H~0~ that gave 31 or more correct. Why? Because *that is our p-value*.
 
 ```{r}
 p = sum(number_correct>=31)/nexp
-
+p
 ```
 
 ## Interpreting the p-value and coming to a conclusion
@@ -172,7 +172,7 @@ p
 
 ## Dataset
 
-In the past, you have learned about t-tests using the question of whether men and women have different forearm lengths as an example. In the 1017/18 academic year, a group of ZJE first-year students did the experiment as follows: Each student measured their forearm length (in mm) and entered their (self-identified) gender and their forearm length into a table. The results are in file \verb=forearm_length.csv= 
+In the past, you have learned about t-tests using the question of whether men and women have different forearm lengths as an example. In the 1017/18 academic year, a group of ZJE first-year students did the experiment as follows: Each student measured their forearm length (in mm) and entered their (self-identified) gender ("M" or "F"^[For the purpose of simplicity, we exclude non-binary gender identities from this example.]) and their forearm length into a table. The results are in file \verb=forearm_length.csv= 
 
 Let's start by importing the dataset into R.
 
@@ -197,7 +197,7 @@ hist(forearm_data[forearm_data$Gender=="F","ForearmLength"],
      main="F", ylab="") 
 ```
 
-What is the difference between mean male and female forearm length in our dataset?^{As you can see, we take the absolute difference. Why?} 
+What is the difference between mean male and female forearm length in our dataset?^[As you can see, we take the absolute difference. Why?]
 
 ```{r}
 mean_M <- mean(forearm_data[forearm_data$Gender=="M","ForearmLength"])
@@ -206,10 +206,10 @@ diff <- abs(mean_M - mean_F)
 diff
 ```
 
-You can see that the difference is `r round(diff)` mm.
+You can see that the difference is around `r round(diff)` mm.
 
 
-## Simulate one experiment under H0
+## Simulate one experiment under H~0~
 
 Let's now pretend that we don't know how to do a t-test (or that we do not feel comfortable performing a t-test)^[Recall the conditions that need to be met for a t-test!] Is there a bootstrap-based alternative that we can use?
 
@@ -226,7 +226,7 @@ n_male <- sum(forearm_data$Gender=="M")
 n_female <- sum(forearm_data$Gender=="F")
 ```
 
-This gives us the size for both bootstrap samples.^{How would you convince yourself that this works and we have counted correctly?}. Now, let's take the actual sample
+This gives us the size for both bootstrap samples.^[How would you convince yourself that this works and we have counted correctly?]. Now, let's take the actual sample
 
 ```{r}
 male <- sample(forearm_data$ForearmLength, n_male, replace=TRUE)
@@ -235,11 +235,11 @@ female <- sample(forearm_data$ForearmLength, n_female, replace=TRUE)
 lowx <- min(forearm_data$ForearmLength)-10
 highx <- max(forearm_data$ForearmLength)+10
 
-hist(forearm_data[forearm_data$Gender=="M","ForearmLength"], 
+hist(male, 
      col=adjustcolor("orange2", alpha.f=0.2), xlim=c(lowx,highx), 
      xlab="", ylab="", main="M") 
 
-hist(forearm_data[forearm_data$Gender=="F","ForearmLength"], 
+hist(female, 
      col=adjustcolor( "turquoise", alpha.f = 0.2), xlim=c(lowx,highx), 
      xlab="Forearm Length (mm)", 
      main="F", ylab="") 
@@ -247,10 +247,10 @@ hist(forearm_data[forearm_data$Gender=="F","ForearmLength"],
 sample_mean_M <- mean(male)
 sample_mean_F <- mean(female)
 sample_diff <- abs(sample_mean_M - sample_mean_F)
-
+sample_diff
 ```
 
-## Simulate 10000 experiments under H0
+## Simulate 10000 experiments under H~0~
 
 Now again, in order to get a p value, we want to repeat this bootstrap experiment many times, for instance ten thousand. Try and write down the code yourself before turning the page!
 
@@ -270,7 +270,7 @@ for (i in 1:experiments){
  }
 ```
 
-Visualising the Null distribution and plotting the p value is very similar to our previous example
+Visualising the Null distribution and plotting the p value is very similar to our previous example:
 
 ```{r}
 xmax <- max(diffs,diff)
@@ -283,7 +283,7 @@ pval
 
 What is your p value? How do you interpret it? Do you see potential problems with it? How would you report it? 
 
-Your simulation will tell you that your p value is 0. Zero means an outcome is mathematically impossible. But we know that this is not exactly true. We know that there is at least one possible sample that gives a difference like the one we found in the experiment (namely the sample that we took during the experiment). So, reporting p=0 is problematic. The only thing we can say is that it is less than one in the total number of bootstrap experiments we did, so in this case less than 1 in ten thousand: \(p < 0.0001\)
+Your simulation may tell you that your p value is 0. Zero means an outcome is mathematically impossible. But we know that this is not exactly true. We know that there is at least one possible sample that gives a difference like the one we found in the experiment (namely the sample that we took during the experiment). So, reporting \(p=0\) is problematic. The only thing we can say is that it is less than one in the total number of bootstrap experiments we did, so in this case less than 1 in ten thousand: \(p < 0.0001\)
 
 ## Compare to a "traditional" t-test
 
