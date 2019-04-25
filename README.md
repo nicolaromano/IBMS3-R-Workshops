@@ -11,12 +11,8 @@ List of workshops
 - Workshop 3: Mixed effects models
 - Workshop 4: Categorical data analysis
 - Workshop 5: Bootstrapping and randomisation
-
-In preparation
-
 - Workshop 6: Classification
-- Workshop 7: Clustering
-- Workshop 8: PCA
+- Workshop 7: PCA and clustering
 
 All of the content is released under the Creative Commons Attribution-ShareAlike 4.0 International (CC-BY-SA 4.0) license, so feel free to modify the files, reuse them, and improve them (and let me know so I can use the improved versions as well!).
 
