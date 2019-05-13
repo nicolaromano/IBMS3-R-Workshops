@@ -44,9 +44,17 @@ expr <- as.matrix(expr[,-1])
 expr <- t(expr)
 ```
 
+# Learning objectives
+
+After completing this workshop you should be able to
+
+- Visualize high-dimension data
+- Perform unsupervised clustering on a dataset
+- Perform and interpret PCA on a large dataset
+
 # Introduction
   
-In this last workshop we will have some hands-on practice with some of the topics that you have learned in Semester 2.
+In this workshop we will have some hands-on practice with some of the topics that you have learned in Semester 2.
 
 During this workshop we will use a fairly large dataset containing gene expression data from several cell lines, which are part of the NCI-60 panel. This is a panel of 60 cancer cell lines developed in the 1990s by the National Cancer Institute^[See https://en.wikipedia.org/wiki/NCI-60 and https://dtp.cancer.gov/discovery_development/nci-60/cell_list.htm for more info].
 
@@ -55,9 +63,9 @@ The original dataset can be retrieved from NCBI^[https://www.ncbi.nlm.nih.gov/si
 # Preparing the data
 
 There are two files called `NCI60.csv.gz`^[Note: .gz files are compressed files. R is able to read these files directly, using `read.csv`.] and `info.csv`.
-The first contains gene expression data for >50000 genes (from a microarray experiment), while the latter contains information about the samples.
+The first contains gene expression data for >50000 transcript (from a microarray experiment^[Note that the human genome has only ~20000 genes; in a microarray experiment, multiple probes are used to measure transcript for the same genes, that is why the number of probes here is so high.]), while the latter contains information about the samples.
 
-To make your life easier for later you should generate:
+The first step is to prepare your data; to make your life easier for later you should generate:
 
 - one variable with the gene names
 - one matrix with the expression levels (use `as.matrix` to convert the data frame to a matrix)
@@ -80,7 +88,7 @@ Try answering the following questions:
 - How many cell lines from each type?
 - Are the levels of the Ras gene (HRAS) changed between different groups?
 
-Now, compare this dataset with the ones you have worked with in the previous workshops. Is it easy to explore and plot the data or do you find any challenging aspects in this dataset? 
+Now, think of this dataset in relation to the ones you have worked with in the previous workshops. Is it easy to explore and plot the data or do you find any challenging aspects in this dataset? 
 
 What if I wanted to know what genes are different between leukemia and melanoma? Clearly, trying one gene at a time is not the answer; furthermore the difference may lie in the specific pattern of expression of multiple genes...
 
@@ -143,13 +151,13 @@ We are going to calculate the distance of the first 100 points only^[**ATTENTION
 dst <- dist(expr[,1:100], method = "euclidean") 
 ```
 
-We can draw the distance matrix using the `image` function. This shows a *heatmap*, a common way to represent matrix data. A heatmap consists of many little squares, one for each observation. In this case, our distance matrix will be 80 x 80^[Why?] each corresponding to the distance between two lines. For example, the square at (10;20) is the distance between cell line 10 and 20^[The matrix is symmetrical with respect to the diagonal. Why?].
+We can draw the distance matrix using the `image` function. This shows a *heatmap*, a common way to represent matrix data. A heatmap consists of many little squares, one for each observation. In this case, our distance matrix will be 80 x 80, each corresponding to the distance between two cell lines. For example, the square at (10;20) is the distance between cell line 10 and 20^[The matrix is symmetrical with respect to the diagonal. Why?].
 `image` will show low values in red, mid values in yellow, and high values in white.
 ```{r fig.height=4, fig.width=3.5, out.width = "70%"}
 image(x = 1:80, y = 1:80, z = as.matrix(dst), las = 1)
 ```
 
-Clearly, from the image above, we can see that there are various levels of similarity between our cell lines.
+Clearly, from the image above, we can see that there are various levels of similarity between our cell lines. Do you see anything interesting in this plot?
 
 Let's now create the dendrogram. The `hclust` function, performs unsupervised hierarchical clustering of data, and can output a dendrogram. There are many methods to cluster the data, today we are going to use the Ward method, but there are other options^[see `?hclust` for more details. Feel free to experiment with different clustering methods].
 
@@ -177,7 +185,7 @@ d %>%
 legend("topright", fill = 1:4, legend = levels(info$tissue), cex = 0.5)
 ```
 
-With the exception of some melanoma and breast cancer lines, we can see that even using only 100 of the >50000 genes already shows the difference between cell lines! This tells us that:
+With the exception of some melanoma and breast cancer lines, we can see that even using only 100 of the >50000 transcripts already shows the difference between cell lines! This tells us that:
 
 - Different cell lines have a specific gene signature
 - The differences in gene signature are more dependent on the tissue of origin, rather than on the specific line
@@ -196,8 +204,7 @@ pheatmap(expr[,1:100],
          border_color = NA)
 ```
 
-We cannot see any particular pattern regarding the cell type, however, it is clear that certain genes are more expressed than others, throughout the cell lines. However, if we change the row names from the name of the cell lines to the tissue we can see that those small differences are big enough to cluster cell lines with the same origin together^[Indeed, if you look closely, you may start to see some patterns.].
-
+We can print the tissue of origin instead of the cell line name to make the plot more useful.
 \newpage
 
 ```{r fig.height=4, size = "small"}
@@ -209,13 +216,19 @@ pheatmap(expr[,1:100],
 rownames(expr) <- info$sample
 ```
 
+- What can you conclude from this plot?
+- Try and use a different set of genes (pherhaps a random set!), does that change the output?
+- Try and calculate the variance in the expression of each of the genes (you can use the `var` or the `sd` function to do so), then select the 100 genes with the highest variance and re-plot the heatmap. 
+- Now do the same with the 100 genes with the lowest variance. Is there any difference? 
+- Do you think looking at variance is a good strategy? Why?
+
 # PCA
 
-So far, we have only used 100 genes from our dataset which, in this particular case happened to give quite satisfactory results; however, what if some interesting difference is present in the other >50000 genes we did not consider?
+So far, we have only used some of the genes from our dataset which, in this particular case happened to give quite satisfactory results; however, what if some interesting difference is present in the other >50000 columns that we did not consider?
 
 You have learned about dimension reduction techniques, specifically about PCA. Let's try it on our data!
 
-Running PCA in R is extremely simple, using the `prcomp` function^[Although another function called `princomp` exists, it has slightly lower numerical accuracy. `prcomp` is generally preferred to it.]. Remember that our data needs to be centered around 0; we could do this manually, or ask `prcomp` to do it. We can also ask it to scale the data, so that each variable (gene) has a variance of 1. This is generally helpful to avoid variables with sustantially bigger variance to have more weight in the PCA output.
+Running PCA in R is extremely simple, using the `prcomp` function. Remember that our data needs to be centered around 0; we could do this manually, or ask `prcomp` to do it. We can also ask it to scale the data, so that each variable (gene) has a variance of 1. This is generally helpful to avoid variables with sustantially bigger variance to have more weight in the PCA output.
 
 ```{r}
 # Note that we are using the whole dataset this time!
@@ -232,26 +245,73 @@ library(factoextra)
 fviz_eig(pca, ncp = 20)
 ```
 
-You can see that in this case PC1 and PC2 only account for approximately 15% of the variance in the data. Taking the first 10 PCs takes us up to ~50% of explained variance^[You can find the variance associated to each PC by squaring `pca$sdev`].
+- How do you interpret this plot?
+- How much variance is explained by the first 10 PCs^[You can find the variance associated to each PC by squaring `pca$sdev`]?.
 
-Let's plot the first two components.
+Now let's plot the first two components.
 
 ```{r fig.width=4}
 fviz_pca_ind(pca, 
              col.ind = info$tissue, 
-             geom.ind = "point")
+             geom.ind = "point",
+             axes = c(1, 2))
 ```
 
 You can see that cells mostly cluster in separate groups, with the exception of some breast cancer lines. The function also plots the center of each group as a data point with bigger size; this is helpful if you want to look for general changes in your data.
 
-We can also ask R to tell us which variables are the ones that most contribute to a certain PC.
+We can visualise other components as well
 
-```{r fig.width=4, fig.height=4}
+```{r fig.width=4}
+fviz_pca_ind(pca, 
+             col.ind = info$tissue, 
+             geom.ind = "point",
+             axes = c(1, 3))
+```
+
+- How does this plot compare to the previous one?
+- Try to plot other PCs. What do you observe when plotting PCs with higher number? Why?
+\newpage
+
+## Clustering the PCA results
+
+In this case we already know what tissue these cell lines come from, but that may not always be the case. In those situations we may want to try and cluster the observations in the PC space ourselves.
+
+For example, we could use the k-means algorithm you have been told about in the lectures. I will use k-means on the first 20 PCs (accounting for ~66% of the dataset variance), asking for 4 clusters. We will then color the points according to the clusters assigned by the k-means algorithm^[We are "cheating" a little bit here, since we know that, in reality, there are 4 types of tissue... in other situations choosing the number of clusters may not be as easy!].
+
+```{r fig.width=4}
+# We try 100 different initial centroid positions by setting  nstart = 100
+km <- kmeans(pca$x[,1:20], 4,
+             nstart = 100)
+fviz_pca_ind(pca, 
+             col.ind = as.factor(km$cluster),
+             geom.ind = "point")
+```
+
+- Does k-means clustering correctly divide the samples?
+- Try different values of nstart. Does this make a difference?
+- Does k-means correctly identify the clusters in the data? Where does it fail?
+
+Finally, we can also ask R to tell us which variables are the ones that most contribute to a certain PC.
+
+```{r fig.height=2.5}
 fviz_contrib(pca, choice = "var", top = 20, axes = 1)
-
-boxplot(expr[,54384]~info$tissue)
+```
+```{r fig.height=4, fig.width=5}
+boxplot(expr[,54384]~info$tissue, las = 1)
 ```
 
 In this example, variable 54384 (corresponding to gene SASH1) is the one that most discriminates over PC1, albeit accounting for just a very small percentage of the variance. By plotting it we see that it is indeed quite different between the different groups.
 
-# Differential expression analysis
+# Further work
+
+Further analysis of genomic data (microarray, RNA-seq, CHIP-seq, etc) can be quite complex and definitely out of the scope of this workshop.
+Further analysis may involve differential gene expression analysis, to identify genes that are over- or underexpressed in specific clusters, as well as pathway analysis to see if  component of specific molecular pathways are expressed in certain clusters or conditions. This can invove using gene ontology (GO) descriptors^[See https://en.wikipedia.org/wiki/Gene_ontology and http://geneontology.org/].
+
+Examples of how to perform these can be found here^[Note that these are just some of the possible analysis that can be performed, there is a lot more!]: 
+
+- http://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html
+
+- https://bioconductor.org/packages/release/bioc/vignettes/topGO/inst/doc/topGO.pdf
+
+
+For 
