@@ -72,13 +72,19 @@ ggplot(data = metab, aes(x = Treatment, y = Concentration)) +
   geom_boxplot()
 ```
 
-But, let's say we also want to add some points over the boxplot, how do we go about it? We just add another layer using `geom_point`^[Note: you can always save the result of the plot into a variable and then add to that. For example `g <- ggplot(....)` and then `g + geom_boxplot()`.]
+If you wanted to plot an histogram, instead, you could do
 
-\newpage
+```{r, tidy = FALSE}
+ggplot(data = metab, aes(x = Concentration)) +
+  geom_histogram(binwidth = 20) # Or use bin to set the number of bins
+```
+
+But, let's say we want something more complicated, for instance adding some points over the boxplot, how do we go about it? We just add another layer using `geom_point`^[Note: you can always save the result of the plot into a variable and then add to that. For example `g <- ggplot(....)` and then `g + geom_boxplot()`.]
 
 ```{r, tidy = FALSE}
 ggplot(data = metab, aes(x = Treatment, y = Concentration)) +
-  # Avoid plotting outliers on the boxplot, since we are adding points on top
+  # Avoid plotting outliers on the boxplot, 
+  # since we are adding points on top
   geom_boxplot(outlier.shape = NA) + 
   geom_point()
 ```
@@ -101,6 +107,8 @@ ggplot(data = metab, aes(x = Treatment, y = Concentration)) +
 
 What happens if you map the color to Age instead? Try it and see why `ggplot2` makes it so easy to produce neat plots.
 
+**Challenge**: can you plot two superimposed histograms of the metabolite concentration, one for men and one for women?
+
 # Faceting
 
 The plot above is very pretty, but it is quite complicated to clearly see M vs F. One way we could go about this is faceting, that is, splitting the plot into subplots as follows
@@ -112,4 +120,58 @@ ggplot(data = metab, aes(x = Treatment, y = Concentration)) +
   facet_grid(~Sex)
 ```
 
-The notation 
+The `~Sex` notation tells `ggplot2` to split the plot by Sex. This can also be used on multiple variables. Let's create a new one, by dividing people in Young (<=60 years old), and Old (>60 years old)^[An absolutely arbitrary decision...]
+
+```{r}
+metab$AgeCateg <- ifelse(metab$Age <= 60, "Young", "Old")
+```
+
+Now we can facet on Sex and AgeCateg
+
+```{r, tidy = FALSE, fig.height=4}
+ggplot(data = metab, aes(x = Treatment, y = Concentration)) +
+  geom_boxplot(outlier.shape = NA) + 
+  geom_jitter(width = 0.1, size = 0.5) +
+  facet_grid(AgeCateg~Sex)
+```
+
+What does the following code do instead?
+```{r eval = FALSE}
+ggplot(data = metab, aes(x = Treatment, y = Concentration)) +
+  geom_boxplot(outlier.shape = NA) + 
+  geom_jitter(width = 0.1, size = 0.5) +
+  facet_grid(AgeCateg~.)
+```
+
+# More complex features
+
+We will finish this workshop with a more complex graph. This is really just the _tip of the iceberg_, but hopefully it has given you some inspiration to pursue this further in your own time!
+
+Consider the following plot
+
+```{r tidy = FALSE}
+ggplot(data = metab, aes(x = Age, y = Concentration)) +
+  geom_point(aes(col = Sex)) 
+```
+
+Let's say we want to fit a line through that. We can use a "smoother"
+
+```{r tidy = FALSE}
+ggplot(data = metab, aes(x = Age, y = Concentration)) +
+  geom_point(aes(col = Sex), size = 0.5) +
+  geom_smooth(method = "lm")
+```
+
+This fits a line (calling `lm` in the background... have a look at your notes from last year if you don't remember what that does!) through all the points^[Note the light gray shading around the line, those are confidence intervals for the fit.]. However, wouldn't it be nicer to have a line for males and one for females? That's easily done! 
+\newpage
+
+```{r tidy = FALSE}
+ggplot(data = metab, aes(x = Age, y = Concentration)) +
+  geom_point(aes(col = Sex), size = 0.5) +
+  geom_smooth(method = "lm", aes(col = Sex))
+```
+
+
+# Now it's your turn!
+
+Try and use `ggplot2` to plot the other datasets from Workshop 1. You can also explore the different type of plots available at this address https://www.r-graph-gallery.com/.
