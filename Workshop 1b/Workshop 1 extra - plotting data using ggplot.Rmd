@@ -1,0 +1,115 @@
+---
+title: "R workshop #1 - revisited: plotting data using ggplot"
+author: "Nicola Romanò"
+output: 
+  tufte::tufte_handout: default
+tufte::tufte_html: default
+---
+  
+```{r setup, include=FALSE}
+library(tufte)
+library(xtable)
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(global.par = TRUE)
+
+# See https://stackoverflow.com/questions/25646333/code-chunk-font-size-in-rmarkdown-with-knitr-and-latex
+def.chunk.hook  <- knitr::knit_hooks$get("chunk")
+knitr::knit_hooks$set(chunk = function(x, options) 
+{
+  x <- def.chunk.hook(x, options)
+  ifelse(options$size != "normalsize", paste0("\\", options$size,"\n\n", x, "\n\n\\normalsize"), x)
+})
+```
+
+***
+
+# Introduction
+  
+Workshop 1 has introduced (or reminded) you to plotting data in R.
+This brief workshop will introduce you to a different way of plotting using R, using the `ggplot2` package. `ggplot2` is a system of creating visually pleasing graphics in a simple, easy-to-understand and visually pleasing manner^[`ggplot2` was reated by Hadley Wickham in 2005, based on theory developed by the statistician and computer scientist Leland Wilkinson in his 1999 book "The grammar of graphics".].
+Behind `ggplot2` lies a complex philosophy of visualisation, thus it is very hard to give you a quick, comprehensive view of it. This workshop will give you the basics and, if you are interested, you can pursue this further^[There are too many guides online (of which a lot are free) for me to list here. If you are really super-interested in this, you can try and read Hadley Wickham's book "ggplot2: Elegant Graphics for Data Analysis" which is probably one of the best references you can get.].
+
+# Learning objectives
+
+After completing this workshop you will be able to:
+
+* Use the basic features of ggplot
+
+# Installing and loading ggplot2
+
+As always, when using a non standard R package, you need to install it first using^[This may take a while, it's normal.].
+
+```{r eval = FALSE}
+install.package("ggplot2")
+```
+
+Once installed (which you only do once) you can load it using
+
+```{r}
+library("ggplot2")
+```
+
+# Aesthetics and geometries
+
+The philosophy behind ggplot is that each plot is made out of _layers_ that you can manipulate individually. The main command you are going to use for generating plots is `ggplot`.
+
+But, first of all, let's load up some data! I am going to reuse the dataset from Workshop 1, `metab-workshop1.csv`^[Refer to Workshop 1 for the dataset description].
+
+```{r}
+metab <- read.csv("metab-workshop1.csv")
+```
+
+We can now pass the dataset to `ggplot`, and define the _aesthetics_ that map the data to visual aspects of the plot.
+
+```{r}
+ggplot(data = metab, aes(x = Treatment, y = Concentration))
+```
+
+But... wait a moment, there is nothing on the plot! That is because we did not tell `ggplot` what type of plot we want. Let's try again... this time asking for a boxplot. This is done by using geometries, that are generated through the `geom_....` functions. In our case we are going to use `geom_boxplot`. Because we want to add a new layer to our plot, we use `+` to add the boxplot. Easy, isn't it?
+
+```{r, tidy = FALSE}
+ggplot(data = metab, aes(x = Treatment, y = Concentration)) +
+  geom_boxplot()
+```
+
+But, let's say we also want to add some points over the boxplot, how do we go about it? We just add another layer using `geom_point`^[Note: you can always save the result of the plot into a variable and then add to that. For example `g <- ggplot(....)` and then `g + geom_boxplot()`.]
+
+\newpage
+
+```{r, tidy = FALSE}
+ggplot(data = metab, aes(x = Treatment, y = Concentration)) +
+  # Avoid plotting outliers on the boxplot, since we are adding points on top
+  geom_boxplot(outlier.shape = NA) + 
+  geom_point()
+```
+
+Alternatively, try to use `geom_jitter` instead of `geom_point` to get some _jittered_ points, as below^[Use the `width` parameter to change the amount of jitter.]
+
+```{r echo = F, tidy = FALSE}
+ggplot(data = metab, aes(x = Treatment, y = Concentration)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(width = 0.1)
+```
+
+Let's now colour the points by sex, and make them smaller. Note that, since we are mapping a new variable to an aspect of the plot we need to be redefining the plot aesthetics^[Why don't we put the _col_ parameter in the first `aes` block? Try it for yourself and see!].
+
+```{r, tidy = FALSE}
+ggplot(data = metab, aes(x = Treatment, y = Concentration)) +
+  geom_boxplot(outlier.shape = NA) + 
+  geom_jitter(width = 0.1, aes(col = Sex), size = 0.5)
+```
+
+What happens if you map the color to Age instead? Try it and see why `ggplot2` makes it so easy to produce neat plots.
+
+# Faceting
+
+The plot above is very pretty, but it is quite complicated to clearly see M vs F. One way we could go about this is faceting, that is, splitting the plot into subplots as follows
+
+```{r, tidy = FALSE}
+ggplot(data = metab, aes(x = Treatment, y = Concentration)) +
+  geom_boxplot(outlier.shape = NA) + 
+  geom_jitter(width = 0.1, size = 0.5) +
+  facet_grid(~Sex)
+```
+
+The notation 
