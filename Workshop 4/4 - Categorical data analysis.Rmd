@@ -1,6 +1,6 @@
 ---
 title: "R workshop #4: GLMs for analysis of categorical and bounded data"
-author: "Nicola Romanò"
+author: "Nicola Roman?"
 
 output: 
   tufte::tufte_handout: default
@@ -276,11 +276,13 @@ nonsmokers <- list(AgeAdj = pred.age - 40,
                    Smoker = rep("N", length(pred.age)))
 ```
 
-We can now use _predict_ to ask the model what the log(odds) would be for these new data points^[The `type = "response"` parameter gives us prediction in terms of odds, rather than log(odds). If you omit it you will have to exponentiate the results. In general, it will allow you to see the prediction of the model in terms of Y rather than _f(Y)_, where _f_ is the link function.].
+We can now use _predict_ to ask the model what the log(odds) would be for these new data points^[The `type = "response"` parameter gives us prediction in terms of probability, rather than log(odds). If you omit it you will get log(odds) that you can exponentiate to get odds. In general, it will allow you to see the prediction of the model in terms of Y rather than _f(Y)_, where _f_ is the link function.].
 
-```{r}
-pr.smokers <- predict(model.2, type = "response", newdata = smokers) * 100
-pr.nonsmoker <- predict(model.2, type = "response", newdata = nonsmokers) * 100
+```{r width = 40}
+pr.smokers <- predict(model.2, type = "response", 
+                      newdata = smokers) * 100
+pr.nonsmoker <- predict(model.2, type = "response", 
+                      newdata = nonsmokers) * 100
 ```
 
 We can now plot the prediction on top of our data, showing that the model works extremely well!
@@ -369,7 +371,6 @@ lizards <- read.csv("lizards-workshop4.csv")
 summary(lizards)
 head(lizards)
 ```
-\newpage
 
 We can start by plotting the data:
 
