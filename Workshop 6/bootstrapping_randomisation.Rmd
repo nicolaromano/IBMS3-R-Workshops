@@ -1,7 +1,6 @@
 ---
 title: "Bootstrapping and Randomisation tests"
 author: "MI Stefan"
-date: "Semester 2, 2018/19"
 output: 
   tufte::tufte_handout: default
   tufte::tufte_html: default

@@ -1,5 +1,5 @@
 ---
-title: "R workshop #1 - revisited: plotting data using ggplot"
+title: "Plotting data using ggplot"
 author: "Nicola Romanò"
 output: 
   tufte::tufte_handout: default
@@ -53,10 +53,10 @@ library("ggplot2")
 
 The philosophy behind ggplot is that each plot is made out of _layers_ that you can manipulate individually. The main command you are going to use for generating plots is `ggplot`.
 
-But, first of all, let's load up some data! I am going to reuse the dataset from Workshop 1, `metab-workshop1.csv`^[Refer to Workshop 1 for the dataset description].
+But, first of all, let's load up some data! I am going to reuse the dataset from Workshop 1, `metab.csv`^[Refer to Workshop 1 for the dataset description].
 
 ```{r}
-metab <- read.csv("metab-workshop1.csv")
+metab <- read.csv("metab.csv")
 ```
 
 We can now pass the dataset to `ggplot`, and define the _aesthetics_ that map the data to visual aspects of the plot.

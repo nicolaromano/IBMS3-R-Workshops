@@ -1,6 +1,6 @@
 ---
-title: "R workshop #4: GLMs for analysis of categorical and bounded data"
-author: "Nicola Roman?"
+title: "GLMs for analysis of categorical and bounded data"
+author: "Nicola Romanò"
 
 output: 
   tufte::tufte_handout: default
@@ -140,10 +140,10 @@ It is therefore a very good choice to model something that can only be between 0
 
 Let's see a practical example. We start with a binary outcome^[These data are taken from Payne, 1987, and also analysed in Faraway, 2006], namely whether babies develop respiratory disease in their first year of life, depending on their Gender and Feeding. In particular, three feeding types are being considered: "Bottle", "Breast", "Suppl".
 
-Start by loading the _babyfood_workshop4.csv_ file
+Start by loading the _babyfood.csv_ file
 
 ```{r}
-babyfood <- read.csv("babyfood_workshop4.csv")
+babyfood <- read.csv("babyfood.csv")
 babyfood
 # We reorder the food factor to have Breast as the reference group
 babyfood$food <- factor(babyfood$food, levels = c("Breast", "Bottle", "Mix"))
@@ -202,10 +202,10 @@ Obviously, when looking at this type of data we always need to be very aware tha
 
 The same reasoning applies for datasets where we have measured a probability, or a percentage.
 
-For instance, let's load the file _smoking_workshop4.csv_. This contains survival data^[From Doll, 2004] from 24321 male UK doctors born between 1900 and 1930, in relation to whether they are smokers or not (this only includes life-long smokers).
+For instance, let's load the file _smoking.csv_. This contains survival data^[From Doll, 2004] from 24321 male UK doctors born between 1900 and 1930, in relation to whether they are smokers or not (this only includes life-long smokers).
 
 ```{r}
-smoking <- read.csv("smoking_workshop4.csv")
+smoking <- read.csv("smoking.csv")
 head(smoking)
 ```
 
@@ -364,10 +364,10 @@ $log(Y) = \beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_nX_n$
 
 &nbsp;
 
-Let's consider the data in _lizards-workshop4.csv_. This shows the counts of three species of lizards (A, B, and C) in three different locations (Loc1 to Loc3). For each location lizards were counted in three different plots of land.
+Let's consider the data in _lizards.csv_. This shows the counts of three species of lizards (A, B, and C) in three different locations (Loc1 to Loc3). For each location lizards were counted in three different plots of land.
 
 ```{r}
-lizards <- read.csv("lizards-workshop4.csv")
+lizards <- read.csv("lizards.csv")
 summary(lizards)
 head(lizards)
 ```
