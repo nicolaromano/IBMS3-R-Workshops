@@ -7,12 +7,13 @@ The files are provided as R Markdown (.rmd) files, as well as the knitted PDF.
 List of workshops
 
 - Workshop 1: Plotting and manipulating data
-- Workshop 2: ANOVA and regression with interactions
-- Workshop 3: Mixed effects models
-- Workshop 4: Categorical data analysis
-- Workshop 5: Bootstrapping and randomisation
-- Workshop 6: Classification
-- Workshop 7: PCA and clustering
+- Workshop 2: Plotting using ggplot
+- Workshop 3: ANOVA and regression with interactions
+- Workshop 4: Mixed effects models
+- Workshop 5: Categorical data analysis
+- Workshop 6: Bootstrapping and randomisation
+- Workshop 7: Classification
+- Workshop 8: PCA and clustering
 
 All of the content is released under the Creative Commons Attribution-ShareAlike 4.0 International (CC-BY-SA 4.0) license, so feel free to modify the files, reuse them, and improve them (and let me know so I can use the improved versions as well!).
 
